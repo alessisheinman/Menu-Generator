@@ -4,13 +4,26 @@ const photos = Object.keys(modules).sort().map((k) => modules[k]);
 const left = photos.filter((_, i) => i % 2 === 0);
 const right = photos.filter((_, i) => i % 2 === 1);
 
-/** Decorative photo columns down both sides of the page (wide screens only). */
+/** Decorative photo columns down both sides of the page (hidden below 1200px, where DogStrip shows instead). */
 export function DogRails() {
   return (
     <>
       <Rail side="left" srcs={left} />
       <Rail side="right" srcs={right} />
     </>
+  );
+}
+
+/** Horizontal photo strip under the top bar for screens too narrow for side columns. */
+export function DogStrip() {
+  return (
+    <div className="dog-strip" aria-hidden="true">
+      <div className="dog-track">
+        {[...photos, ...photos].map((src, i) => (
+          <img key={i} src={src} alt="" loading="lazy" decoding="async" draggable={false} />
+        ))}
+      </div>
+    </div>
   );
 }
 

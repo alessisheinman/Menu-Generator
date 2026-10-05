@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { shouldRemindExport } from '../storage/exportImport';
 import { CatalogEditor } from './CatalogEditor';
-import { DogRails } from './DogRails';
+import { DogRails, DogStrip } from './DogRails';
 import { EventEditor } from './EventEditor';
 import { EventList } from './EventList';
 import { useAppState } from './useAppState';
@@ -41,6 +41,7 @@ export function App() {
           <a href="#/catalog" className={route.view === 'catalog' ? 'on' : ''}>Catalog</a>
         </nav>
       </header>
+      <DogStrip />
 
       {!app.storageAvailable && (
         <div className="banner bad">This browser is blocking storage (private window?). Your work won't be saved — use Export backup before closing.</div>

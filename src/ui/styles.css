@@ -232,51 +232,75 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
 .templates > .row { margin-bottom: 0.75rem; }
 .salad-config { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-/* ---------- dog photo rails ---------- */
-.dog-rail { display: none; }
-
-@media (min-width: 1500px) {
-  :root { --rail: 170px; }
-  .dog-rail {
-    display: block;
-    position: fixed;
-    top: 0; bottom: 0;
-    width: var(--rail);
-    overflow: hidden;
-    z-index: 0;
-    background: #2a2622;
-    mask-image: linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  }
-  .dog-rail-left { left: 0; }
-  .dog-rail-right { right: 0; }
-  .dog-track { display: flex; flex-direction: column; gap: 14px; padding: 14px; animation: dog-scroll 420s linear infinite; }
-  .dog-rail-right .dog-track { animation-direction: reverse; animation-duration: 360s; }
-  .dog-rail:hover .dog-track { animation-play-state: paused; }
-  .dog-track img {
-    width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block;
-    border: 5px solid #fff; border-bottom-width: 18px; border-radius: 3px;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.4);
-  }
-  .dog-track img:nth-child(odd) { transform: rotate(-2deg); }
-  .dog-track img:nth-child(even) { transform: rotate(1.5deg); }
-  .app > :not(.dog-rail) { position: relative; z-index: 1; }
+/* ---------- dog photos ----------
+ * >= 1500px: wide side columns · 1200–1499px: slim side columns · < 1200px: strip under the top bar.
+ */
+.dog-rail {
+  position: fixed;
+  top: 0; bottom: 0;
+  width: var(--rail);
+  overflow: hidden;
+  z-index: 0;
+  background: #2a2622;
+  mask-image: linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
 }
+.dog-rail-left { left: 0; }
+.dog-rail-right { right: 0; }
+.dog-track { display: flex; flex-direction: column; gap: 14px; padding: 14px; animation: dog-scroll 420s linear infinite; }
+.dog-rail-right .dog-track { animation-direction: reverse; animation-duration: 360s; }
+.dog-rail:hover .dog-track, .dog-strip:hover .dog-track { animation-play-state: paused; }
+.dog-track img {
+  width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; flex: none;
+  border: 5px solid #fff; border-bottom-width: 18px; border-radius: 3px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.4);
+}
+.dog-track img:nth-child(odd) { transform: rotate(-2deg); }
+.dog-track img:nth-child(even) { transform: rotate(1.5deg); }
+.app > :not(.dog-rail) { position: relative; z-index: 1; }
+
+.dog-strip {
+  display: none;
+  overflow: hidden;
+  margin: 0 -16px 1.25rem;
+  background: #2a2622;
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+.dog-strip .dog-track { flex-direction: row; width: max-content; padding: 12px 14px 16px; animation: dog-scroll-x 600s linear infinite; }
+.dog-strip .dog-track img { width: 84px; border-width: 4px; border-bottom-width: 12px; }
 
 @keyframes dog-scroll {
   from { transform: translateY(0); }
   to { transform: translateY(-50%); }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .dog-track { animation: none !important; }
+@keyframes dog-scroll-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
-/* ---------- narrower screens ---------- */
-@media (max-width: 1100px) {
+@media (min-width: 1500px) {
+  :root { --rail: 170px; }
+}
+@media (min-width: 1200px) and (max-width: 1499.98px) {
+  :root { --rail: 110px; }
+  .dog-track { gap: 10px; padding: 10px; }
+  .dog-track img { border-width: 4px; border-bottom-width: 12px; }
+  .editor { grid-template-columns: minmax(0, 1fr) 340px; }
+}
+@media (max-width: 1199.98px) {
+  .dog-rail { display: none; }
+  .dog-strip { display: block; }
+  .topbar { margin-bottom: 0; }
   .editor { grid-template-columns: 1fr; }
   .editor-side { position: static; max-height: none; }
   .pages { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dog-track { animation: none !important; }
+  .dog-strip { overflow-x: auto; }
+}
+
+/* ---------- narrower screens ---------- */
 @media (max-width: 760px) {
   .line { grid-template-columns: 18px 3.2rem 4rem 1fr auto; }
   .line .tags { grid-column: 2 / 4; }
