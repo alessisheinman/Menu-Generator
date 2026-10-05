@@ -1,9 +1,16 @@
-import { useMemo, useState } from 'react';
 import {
-  createDay, createMeal, duplicateDay, duplicateMeal, insertAfter, mapDay, mapMeal, move, touch, validateEvent,
+  DndContext, DragOverlay, MeasuringStrategy, useDroppable, type DragEndEvent, type DragOverEvent, type DragStartEvent, type Over,
+} from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  createDay, createMeal, duplicateDay, duplicateMeal, insertAfter, mapDay, mapMeal, touch, validateEvent,
 } from '../model/event';
-import type { Catalog, MealType, MenuEvent } from '../model/types';
+import { formatHeader, formatLine } from '../model/format';
+import { findLine, findMeal, moveDay, moveLine, moveMeal } from '../model/reorder';
+import type { Catalog, Day, Meal, MealType, MenuEvent } from '../model/types';
 import { ConfirmButton, UNIT_SUGGESTIONS, WEEKDAYS } from './common';
+import { dragId, rawId, typedCollision, useDragSensors, useSortableBox, type DragBox, type DragType } from './dnd';
 import { MealEditor } from './MealEditor';
 import { Preview } from './Preview';
 import { saveBlob } from './useAppState';
@@ -22,6 +29,12 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
   const [error, setError] = useState('');
   const [activeMealId, setActiveMealId] = useState<string>();
   const update = (e: MenuEvent) => onChange(touch(e));
+  // Drag handlers read the latest event through a ref (several drag-over moves can fire between renders).
+  const eventRef = useRef(event);
+  eventRef.current = event;
+  const dragStart = useRef<MenuEvent | null>(null);
+  const [dragging, setDragging] = useState<{ type: DragType; id: string } | null>(null);
+  const sensors = useDragSensors();
 
   const dishByName = useMemo(() => new Map(catalog.dishes.map((d) => [d.name.toLowerCase(), d])), [catalog.dishes]);
   const warnings = validateEvent(event);
@@ -41,6 +54,64 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
     const lastIdx = last ? WEEKDAYS.indexOf(last.label.trim().toUpperCase()) : -1;
     const label = lastIdx >= 0 ? WEEKDAYS[(lastIdx + 1) % 7] : '';
     update({ ...event, days: [...event.days, createDay(label)] });
+  };
+
+  /** Where a drop would land: the container (meal or day) and the hovered item, if any. */
+  const targetOf = (over: Over | null) => {
+    const d = over?.data.current;
+    if (!over || !d) return null;
+    if (d.type === 'line' || d.type === 'lines') return { container: d.mealId as string, overId: d.type === 'line' ? rawId(over.id) : undefined };
+    if (d.type === 'meal' || d.type === 'meals') return { container: d.dayId as string, overId: d.type === 'meal' ? rawId(over.id) : undefined };
+    if (d.type === 'day') return { container: 'days', overId: rawId(over.id) };
+    return null;
+  };
+  const applyMove = (type: DragType, id: string, t: { container: string; overId?: string }) => {
+    const ev = eventRef.current;
+    const next = type === 'line' ? moveLine(ev, id, t.container, t.overId)
+      : type === 'meal' ? moveMeal(ev, id, t.container, t.overId)
+        : t.overId ? moveDay(ev, id, t.overId) : ev;
+    if (next !== ev) { eventRef.current = next; update(next); }
+  };
+  const containerOf = (type: DragType, id: string) =>
+    type === 'line' ? findLine(eventRef.current, id)?.meal.id : type === 'meal' ? findMeal(eventRef.current, id)?.day.id : 'days';
+
+  const onDragStart = (e: DragStartEvent) => {
+    dragStart.current = eventRef.current;
+    setDragging({ type: e.active.data.current?.type as DragType, id: rawId(e.active.id) });
+  };
+  // Crossing into another meal/day moves the item right away so that list opens a gap for it.
+  const activeOf = (e: DragOverEvent | DragEndEvent) => ({ type: e.active.data.current?.type as DragType, id: rawId(e.active.id) });
+  const onDragOver = (e: DragOverEvent) => {
+    const a = activeOf(e);
+    if (a.type === 'day') return;
+    const t = targetOf(e.over);
+    if (t && t.overId !== a.id && t.container !== containerOf(a.type, a.id)) applyMove(a.type, a.id, t);
+  };
+  const onDragEnd = (e: DragEndEvent) => {
+    const a = activeOf(e);
+    const t = targetOf(e.over);
+    if (t && t.overId && t.overId !== a.id && t.container === containerOf(a.type, a.id)) applyMove(a.type, a.id, t);
+    setDragging(null);
+    dragStart.current = null;
+  };
+  const onDragCancel = () => {
+    if (dragStart.current) update(dragStart.current);
+    setDragging(null);
+    dragStart.current = null;
+  };
+
+  const overlay = (): ReactNode => {
+    if (!dragging) return null;
+    if (dragging.type === 'line') {
+      const hit = findLine(event, dragging.id);
+      return hit && <div className="drag-chip">{formatLine(hit.line) || 'Empty line'}</div>;
+    }
+    if (dragging.type === 'meal') {
+      const hit = findMeal(event, dragging.id);
+      return hit && <div className="drag-card"><span className="meal-type">{hit.meal.type}</span> {formatHeader(hit.day.label, '', hit.meal).filter(Boolean).join(' · ')}</div>;
+    }
+    const day = event.days.find((d) => d.id === dragging.id);
+    return day && <div className="drag-card day-card">{day.label || 'Day'} · {day.meals.length} meal{day.meals.length === 1 ? '' : 's'}</div>;
   };
 
   const download = async () => {
@@ -80,48 +151,70 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
           </label>
         </div>
 
-        {event.days.map((day, di) => (
-          <section key={day.id} className="day">
-            <header className="day-head">
-              <input
-                className="day-label"
-                value={day.label}
-                list="dl-days"
-                placeholder="DAY (e.g. TUESDAY)"
-                aria-label="Day label"
-                onChange={(e) => update(mapDay(event, day.id, (d) => ({ ...d, label: e.target.value.toUpperCase() })))}
-              />
-              <div className="day-actions">
-                <button type="button" className="icon" title="Move day up" disabled={di === 0} onClick={() => update({ ...event, days: move(event.days, di, di - 1) })}>↑</button>
-                <button type="button" className="icon" title="Move day down" disabled={di === event.days.length - 1} onClick={() => update({ ...event, days: move(event.days, di, di + 1) })}>↓</button>
-                <button type="button" title="Copy this whole day" onClick={() => update({ ...event, days: insertAfter(event.days, day.id, duplicateDay(day)) })}>Duplicate day</button>
-                <ConfirmButton label="Delete day" confirmLabel="Delete whole day?" onConfirm={() => update({ ...event, days: event.days.filter((d) => d.id !== day.id) })} />
-              </div>
-            </header>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={typedCollision}
+          measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnd={onDragEnd}
+          onDragCancel={onDragCancel}
+        >
+          <SortableContext items={event.days.map((d) => dragId('day', d.id))} strategy={verticalListSortingStrategy}>
+            {event.days.map((day) => (
+              <SortableDay key={day.id} day={day}>
+                {(drag) => (
+                  <>
+                    <header className="day-head" {...drag.boxProps}>
+                      <span className="grip" {...drag.gripProps}>⋮⋮</span>
+                      <input
+                        className="day-label"
+                        value={day.label}
+                        list="dl-days"
+                        placeholder="DAY (e.g. TUESDAY)"
+                        aria-label="Day label"
+                        onChange={(e) => update(mapDay(event, day.id, (d) => ({ ...d, label: e.target.value.toUpperCase() })))}
+                      />
+                      <div className="day-actions">
+                        <button type="button" title="Copy this whole day" onClick={() => update({ ...event, days: insertAfter(event.days, day.id, duplicateDay(day)) })}>Duplicate day</button>
+                        <ConfirmButton label="Delete day" confirmLabel="Delete whole day?" onConfirm={() => update({ ...event, days: event.days.filter((d) => d.id !== day.id) })} />
+                      </div>
+                    </header>
 
-            {day.meals.map((meal, mi) => (
-              <div key={meal.id} onFocusCapture={() => setActiveMealId(meal.id)}>
-                <MealEditor
-                  meal={meal}
-                  index={mi}
-                  count={day.meals.length}
-                  catalog={catalog}
-                  dishByName={dishByName}
-                  warnings={mealWarnings(meal.id)}
-                  onChange={(m) => update(mapMeal(event, day.id, meal.id, () => m))}
-                  onDuplicate={() => update(mapDay(event, day.id, (d) => ({ ...d, meals: insertAfter(d.meals, meal.id, duplicateMeal(meal)) })))}
-                  onDelete={() => update(mapDay(event, day.id, (d) => ({ ...d, meals: d.meals.filter((m) => m.id !== meal.id) })))}
-                  onMove={(dir) => update(mapDay(event, day.id, (d) => ({ ...d, meals: move(d.meals, mi, mi + dir) })))}
-                />
-              </div>
+                    <SortableContext items={day.meals.map((m) => dragId('meal', m.id))} strategy={verticalListSortingStrategy}>
+                      <MealsArea day={day}>
+                        {day.meals.map((meal) => (
+                          <SortableMeal key={meal.id} meal={meal} dayId={day.id}>
+                            {(mealDrag) => (
+                              <div onFocusCapture={() => setActiveMealId(meal.id)}>
+                                <MealEditor
+                                  meal={meal}
+                                  catalog={catalog}
+                                  dishByName={dishByName}
+                                  warnings={mealWarnings(meal.id)}
+                                  drag={mealDrag}
+                                  onChange={(m) => update(mapMeal(event, day.id, meal.id, () => m))}
+                                  onDuplicate={() => update(mapDay(event, day.id, (d) => ({ ...d, meals: insertAfter(d.meals, meal.id, duplicateMeal(meal)) })))}
+                                  onDelete={() => update(mapDay(event, day.id, (d) => ({ ...d, meals: d.meals.filter((m) => m.id !== meal.id) })))}
+                                />
+                              </div>
+                            )}
+                          </SortableMeal>
+                        ))}
+                      </MealsArea>
+                    </SortableContext>
+
+                    <div className="add-meal">
+                      <span>Add meal:</span>
+                      {ADDABLE.map((t) => <button key={t} type="button" onClick={() => addMeal(day.id, t)}>+ {t}</button>)}
+                    </div>
+                  </>
+                )}
+              </SortableDay>
             ))}
-
-            <div className="add-meal">
-              <span>Add meal:</span>
-              {ADDABLE.map((t) => <button key={t} type="button" onClick={() => addMeal(day.id, t)}>+ {t}</button>)}
-            </div>
-          </section>
-        ))}
+          </SortableContext>
+          <DragOverlay dropAnimation={null}>{overlay()}</DragOverlay>
+        </DndContext>
 
         <button type="button" className="add-day" onClick={addDay}>+ Add day</button>
       </div>
@@ -144,9 +237,44 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
           )}
         </div>
         <h2 className="preview-title">Preview</h2>
-        <Preview event={event} activeMealId={activeMealId} />
+        <Preview
+          event={event}
+          activeMealId={activeMealId}
+          onMoveMeal={(mealId, overMealId) => {
+            const over = findMeal(event, overMealId);
+            if (over) update(moveMeal(event, mealId, over.day.id, overMealId));
+          }}
+        />
       </aside>
     </div>
   );
 }
 
+
+function SortableDay({ day, children }: { day: Day; children: (drag: DragBox) => ReactNode }) {
+  const { setNodeRef, style, isDragging, boxProps, gripProps } = useSortableBox(dragId('day', day.id), { type: 'day' });
+  return (
+    <section ref={setNodeRef} style={style} className={`day ${isDragging ? 'dragging' : ''}`}>
+      {children({ boxProps, gripProps })}
+    </section>
+  );
+}
+
+function MealsArea({ day, children }: { day: Day; children: ReactNode }) {
+  const { setNodeRef } = useDroppable({ id: `meals-area:${day.id}`, data: { type: 'meals', dayId: day.id, empty: day.meals.length === 0 } });
+  return (
+    <div ref={setNodeRef} className={`meals ${day.meals.length === 0 ? 'empty-drop' : ''}`}>
+      {children}
+      {day.meals.length === 0 && <p className="drop-hint">No meals yet — add one below, or drag a meal here.</p>}
+    </div>
+  );
+}
+
+function SortableMeal({ meal, dayId, children }: { meal: Meal; dayId: string; children: (drag: DragBox) => ReactNode }) {
+  const { setNodeRef, style, isDragging, boxProps, gripProps } = useSortableBox(dragId('meal', meal.id), { type: 'meal', dayId });
+  return (
+    <div ref={setNodeRef} style={style} className={isDragging ? 'dragging' : ''}>
+      {children({ boxProps, gripProps })}
+    </div>
+  );
+}

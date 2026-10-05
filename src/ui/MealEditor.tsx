@@ -1,31 +1,32 @@
-import { useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useState, type ReactNode } from 'react';
 import {
-  applyTemplate, blankDishLine, dishLineFrom, emptySlotLine, move, removeLine, saladLine, templateSuggestions, textLine, updateLine,
+  applyTemplate, blankDishLine, dishLineFrom, emptySlotLine, removeLine, saladLine, templateSuggestions, textLine, updateLine,
 } from '../model/event';
 import { SLOTS, type Catalog, type Dish, type Line, type Meal } from '../model/types';
 import { ConfirmButton } from './common';
+import { dragId, useSortableBox, type DragBox } from './dnd';
 import { DishRow, SaladRow, TextRow } from './LineRow';
 
 interface Props {
   meal: Meal;
-  index: number;
-  count: number;
   catalog: Catalog;
   dishByName: Map<string, Dish>;
   warnings: string[];
   onChange: (m: Meal) => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  onMove: (dir: -1 | 1) => void;
+  /** Handlers that make the header bar the meal's drag handle. */
+  drag?: DragBox;
 }
 
-export function MealEditor({ meal, index, count, catalog, dishByName, warnings, onChange, onDuplicate, onDelete, onMove }: Props) {
+export function MealEditor({ meal, catalog, dishByName, warnings, onChange, onDuplicate, onDelete, drag }: Props) {
   const templates = catalog.templates.filter((t) => t.mealType === meal.type);
   const [pickedTemplate, setPickedTemplate] = useState(meal.templateId ?? templates[0]?.id ?? '');
   const template = catalog.templates.find((t) => t.id === meal.templateId);
   const suggestions = templateSuggestions(meal, template, catalog);
-  const [dragFrom, setDragFrom] = useState<number | null>(null);
-  const [dragOver, setDragOver] = useState<number | null>(null);
+  const { setNodeRef: setLinesRef } = useDroppable({ id: `lines-area:${meal.id}`, data: { type: 'lines', mealId: meal.id, empty: meal.lines.length === 0 } });
   const hasSalad = meal.lines.some((l) => l.kind === 'salad');
 
   const setLine = (l: Line) => onChange(updateLine(meal, l.id, () => l));
@@ -37,7 +38,8 @@ export function MealEditor({ meal, index, count, catalog, dishByName, warnings, 
 
   return (
     <section className={`meal meal-${meal.type.toLowerCase()}`} aria-label={`${meal.type} ${meal.time}`}>
-      <header className="meal-head">
+      <header className="meal-head" {...drag?.boxProps}>
+        <span className="grip" {...drag?.gripProps}>⋮⋮</span>
         <span className="meal-type">{meal.type}</span>
         <label className="field">
           <span>Time</span>
@@ -60,8 +62,6 @@ export function MealEditor({ meal, index, count, catalog, dishByName, warnings, 
           <input value={meal.headerNote} placeholder="e.g. CHINA, VERY NICE DINNER PLEASE" onChange={(e) => onChange({ ...meal, headerNote: e.target.value })} />
         </label>
         <div className="meal-actions">
-          <button type="button" className="icon" title="Move meal up" disabled={index === 0} onClick={() => onMove(-1)}>↑</button>
-          <button type="button" className="icon" title="Move meal down" disabled={index === count - 1} onClick={() => onMove(1)}>↓</button>
           <button type="button" title="Duplicate this meal" onClick={onDuplicate}>Duplicate</button>
           <ConfirmButton label="Delete" confirmLabel="Delete meal?" onConfirm={onDelete} />
         </div>
@@ -83,37 +83,18 @@ export function MealEditor({ meal, index, count, catalog, dishByName, warnings, 
 
       {warnings.length > 0 && <ul className="warnings">{warnings.map((w) => <li key={w}>{w}</li>)}</ul>}
 
-      <ol className="lines">
-        {meal.lines.map((line, i) => (
-          <li
-            key={line.id}
-            className={`line line-${line.kind} ${dragOver === i ? 'drag-over' : ''} ${dragFrom === i ? 'dragging' : ''}`}
-            onDragOver={(e) => { if (dragFrom !== null) { e.preventDefault(); setDragOver(i); } }}
-            onDrop={(e) => {
-              e.preventDefault();
-              if (dragFrom !== null) onChange({ ...meal, lines: move(meal.lines, dragFrom, i) });
-              setDragFrom(null);
-              setDragOver(null);
-            }}
-          >
-            <span
-              className="handle"
-              draggable
-              title="Drag to reorder"
-              onDragStart={(e) => { setDragFrom(i); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', line.id); }}
-              onDragEnd={() => { setDragFrom(null); setDragOver(null); }}
-            >⋮⋮</span>
-            {line.kind === 'dish' && <DishRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
-            {line.kind === 'text' && <TextRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
-            {line.kind === 'salad' && <SaladRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
-            <span className="row-actions">
-              <button type="button" className="icon" title="Move up" disabled={i === 0} onClick={() => onChange({ ...meal, lines: move(meal.lines, i, i - 1) })}>↑</button>
-              <button type="button" className="icon" title="Move down" disabled={i === meal.lines.length - 1} onClick={() => onChange({ ...meal, lines: move(meal.lines, i, i + 1) })}>↓</button>
-              <button type="button" className="icon remove" title="Remove line" onClick={() => onChange(removeLine(meal, line.id))}>✕</button>
-            </span>
-          </li>
-        ))}
-      </ol>
+      <SortableContext items={meal.lines.map((l) => dragId('line', l.id))} strategy={verticalListSortingStrategy}>
+        <ol className={`lines ${meal.lines.length === 0 ? 'empty-drop' : ''}`} ref={setLinesRef}>
+          {meal.lines.map((line) => (
+            <SortableLine key={line.id} line={line} mealId={meal.id} onRemove={() => onChange(removeLine(meal, line.id))}>
+              {line.kind === 'dish' && <DishRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
+              {line.kind === 'text' && <TextRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
+              {line.kind === 'salad' && <SaladRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
+            </SortableLine>
+          ))}
+          {meal.lines.length === 0 && <li className="drop-hint">No lines yet — add one below, or drag a dish here from another meal.</li>}
+        </ol>
+      </SortableContext>
 
       <footer className="meal-foot">
         <button type="button" onClick={() => addLine(blankDishLine())}>+ Dish</button>
@@ -135,5 +116,18 @@ export function MealEditor({ meal, index, count, catalog, dishByName, warnings, 
         </div>
       )}
     </section>
+  );
+}
+
+function SortableLine({ line, mealId, onRemove, children }: { line: Line; mealId: string; onRemove: () => void; children: ReactNode }) {
+  const { setNodeRef, style, isDragging, boxProps, gripProps } = useSortableBox(dragId('line', line.id), { type: 'line', mealId });
+  return (
+    <li ref={setNodeRef} style={style} className={`line line-${line.kind} ${isDragging ? 'dragging' : ''}`} {...boxProps}>
+      <span className="grip" {...gripProps}>⋮⋮</span>
+      {children}
+      <span className="row-actions">
+        <button type="button" className="icon remove" title="Remove line" onClick={onRemove}>✕</button>
+      </span>
+    </li>
   );
 }

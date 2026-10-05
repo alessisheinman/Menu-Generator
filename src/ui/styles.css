@@ -135,12 +135,8 @@ button.danger.armed { background: var(--red); border-color: var(--red); color: #
   padding: 0.2rem 0.3rem; border-radius: 6px; border: 1px solid transparent;
 }
 .line:hover { background: var(--surface-2); }
-.line.drag-over { border-color: var(--accent); background: var(--accent-soft); }
-.line.dragging { opacity: 0.4; }
 .line-text .text-line, .line-salad .salad { grid-column: 2 / 7; }
 .line-text .text-line { font-weight: 600; border-style: dashed; }
-.handle { cursor: grab; color: var(--line-strong); user-select: none; text-align: center; letter-spacing: -2px; }
-.handle:hover { color: var(--ink); }
 .row-actions { display: flex; gap: 2px; opacity: 0.35; }
 .line:hover .row-actions, .line:focus-within .row-actions { opacity: 1; }
 .dish-cell { display: flex; gap: 0.3rem; align-items: center; min-width: 0; }
@@ -308,3 +304,33 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
   .line-text .text-line, .line-salad .salad { grid-column: 2 / 5; }
   .salad-config { grid-template-columns: 1fr; }
 }
+
+/* ---------- drag and drop ---------- */
+.line, .meal-head, .day-head, .page-slot { cursor: grab; user-select: none; touch-action: manipulation; }
+.line input, .meal-head input, .day-head input, .line select { cursor: text; user-select: text; }
+.line select, .meal-head select { cursor: pointer; }
+.grip {
+  color: var(--line-strong); text-align: center; letter-spacing: -2px; font-weight: 700;
+  border-radius: 4px; padding: 0 2px; outline-offset: 2px;
+}
+.line:hover .grip, .meal-head:hover .grip, .day-head:hover .grip { color: var(--ink); }
+.grip:focus-visible { outline: 2px solid var(--accent); color: var(--ink); }
+.meal-head .grip, .day-head .grip { align-self: center; font-size: 1.1rem; }
+.dragging { opacity: 0.35; }
+.dragging .page { box-shadow: none; }
+body:has(.drag-chip, .drag-card, .page.lifted) { cursor: grabbing; }
+body:has(.drag-chip, .drag-card, .page.lifted) * { cursor: grabbing !important; }
+
+.drag-chip, .drag-card {
+  background: var(--surface); border: 1px solid var(--accent); border-radius: 8px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.22); padding: 0.45rem 0.8rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32rem; width: max-content;
+}
+.drag-card { display: flex; gap: 0.6rem; align-items: center; padding: 0.7rem 1rem; }
+.day-card { color: var(--red); font-weight: 800; letter-spacing: 0.02em; }
+.page.lifted { box-shadow: 0 14px 36px rgb(0 0 0 / 0.3); transform: rotate(-1.5deg); border-color: var(--accent); }
+
+.lines.empty-drop, .meals.empty-drop { min-height: 3rem; }
+.drop-hint { list-style: none; color: var(--muted); font-style: italic; font-size: 0.88rem; padding: 0.6rem 0.4rem; margin: 0; }
+.meals.empty-drop { border: 2px dashed var(--line); border-radius: var(--radius); margin-bottom: 0.75rem; padding: 0 0.6rem; }
+.preview-title + .hint { margin: -0.25rem 0 0.5rem; font-size: 0.8rem; }

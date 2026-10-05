@@ -98,6 +98,38 @@ export const SEED_TEMPLATES: MealTemplate[] = [
     ],
   },
   {
+    id: 'lunch-american', name: 'American (Burgers)', mealType: 'Lunch', includesSaladBar: true,
+    lines: [
+      d('Split Pea Soup', { alts: ['Tuscan White Bean Soup', 'Lentil Soup', 'Ten Vegetable Soup'] }),
+      d('Grass-Fed Hamburgers'),
+      d('Impossible Burgers', { alts: ['Black Bean Burgers'] }),
+      d('5 Cheese Jalapeño Mac and Cheese', { alts: ['Five Cheese Mac and Cheese'] }),
+      d('Sauteed Portobello Mushrooms'),
+      d('Crispy Onions'),
+      d('Home-Made Potato Chips'),
+      d('Fresh Guacamole'),
+      d('Cheese Toppers: Blue, Cheddar, Mozzarella, Swiss'),
+      d('Fresh Deli and Sliced Cheeses Selections'),
+      d('Homemade Albacore Tuna, Chicken, Home-style Potato & Egg Salad'),
+      d('Fresh Baked Sandwich Rolls, Buns and Brioche'),
+      d('Fresh Baked Blondies and Cookies', { alts: ['Fresh Blondies and Brownies', 'Fresh Cookies and Brownies'] }),
+      d('Fresh Berries with Mint'),
+      extra('Sliced Tomatoes, Onions and Pickles'), extra('Black Bean Burgers'),
+    ],
+  },
+  {
+    id: 'lunch-indian', name: 'Indian', mealType: 'Lunch', includesSaladBar: true,
+    lines: [
+      d('Chicken Tikka Masala'),
+      d('Chana Masala'),
+      d('Mild Coconut Curry Fish'),
+      d('Basmati Rice'),
+      d('Cumin-Roasted Cauliflower'),
+      d('Mango Rice Pudding'),
+      d('Cardamom-Spiced Fresh Fruit'),
+    ],
+  },
+  {
     id: 'dinner-slots', name: 'Dinner (empty slots)', mealType: 'Dinner', includesSaladBar: false,
     lines: [
       slot('Starch'), slot('Starch'), slot('Protein'), slot('Protein'), slot('Vegetable'), slot('Vegetable'),

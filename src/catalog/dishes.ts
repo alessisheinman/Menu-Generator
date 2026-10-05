@@ -37,6 +37,7 @@ const SEED: Record<Category, string[]> = {
     'Spinach & Parmesan', 'Tuna Wraps', 'Turkey and Mustard', 'Turkey, Avocado on Pita', 'Turkey Wraps',
   ],
   Salad: [
+    'Homemade Albacore Tuna, Chicken, Home-style Potato & Egg Salad',
     'Mediterranean Salad|V,G', 'Baby Spinach Salad', 'Burrata Salad', 'Chickpea Salad|V,G', 'Cobb Salad', 'Cole Slaw',
     'Grilled Chicken Caesar', 'Grilled Chicken, Spinach and Pine Nuts', 'Hummus and Grilled Veggies|V',
     'Mesclun with Cranberries, Candied Walnuts and Blue Cheese', 'Mesclun with Oranges, Apples and Nuts',
@@ -44,6 +45,7 @@ const SEED: Record<Category, string[]> = {
     'Three Bean Salad|V,G', 'Yellow and Red Beet Salad|V,G',
   ],
   Pasta: [
+    '5 Cheese Jalapeño Mac and Cheese', 'Five Cheese Mac and Cheese',
     'Penne al Pomodoro|V', 'Rigatoni with Sausage and Peas', 'Spaghetti Aglio e Olio|V', 'Fettuccine Alfredo',
     'Home Made Lasagna', '3 Cheese Ravioli with Sage Butter', 'Alfredo Penne with Shitake Mushrooms and Parsley',
     'Baby Spinach Lasagna', 'Asiago Rigatoni', "Bucatini All'Amatriciana", 'Cheese Ravioli with Saffron',
@@ -54,7 +56,7 @@ const SEED: Record<Category, string[]> = {
     'Rigatoni with Bolognese Sauce', 'Shrimp Pad Thai', 'Spaghetti alla Carbonara', 'Spaghetti and Meatballs',
   ],
   'Rice/Grains': [
-    'Vegetable Jambalaya|V,G', 'Basmati Rice with Dill|V,G', 'Brown Rice with Vegetables and Tofu|V,G',
+    'Basmati Rice|V,G', 'Vegetable Jambalaya|V,G', 'Basmati Rice with Dill|V,G', 'Brown Rice with Vegetables and Tofu|V,G',
     'Wild Rice with Vegetables and Tofu|V,G', 'Wild Rice with Edamame|V,G', 'Mexican Rice with Vegetables and Tofu|V,G',
     'Forbidden Rice with Vegetables and Tofu|V,G', 'Vegetarian Paella|V,G', 'Basmati Brown Rice with Dried Fruit|V,G',
     'Basmati Rice with Cranberries, Dates and Apricots|V,G', 'Black Sticky Rice|V,G', 'Chicken Jambalaya|G',
@@ -68,13 +70,13 @@ const SEED: Record<Category, string[]> = {
     'Free-Range Roasted Rosemary Chicken|G', 'Chicken Parm', 'Chicken Pot Pie', 'Chicken Fajita|G', 'BBQ Chicken|G',
     'Grilled Chicken Breasts with Grilled Veggies|G', 'Chicken Alfredo', 'Chicken Cacciatore|G', 'Chicken Chimichurri|G',
     'Chicken Cordon Bleu', 'Chicken Cutlets', 'Chicken Marsala', 'Chicken Piccata|G', 'Chicken Pizzaiola',
-    'Chicken Roulade with Prosciutto and Mozzarella', 'Chicken Tikka Masala|G', 'Chicken with Ginger and Veggies|G',
+    'Chicken Roulade with Prosciutto and Mozzarella', 'Chicken Tikka Masala', 'Chicken with Ginger and Veggies|G',
     'Chicken with Prosciutto and Mozzarella', 'Chicken with Apricots, Shitake Mushrooms and Couscous', 'Dijon Chicken|G',
     'Fried Chicken', 'Lemon Chicken|G', 'Moroccan Chicken|G', 'Pulled Chicken|G', 'Tarragon Chicken|G', 'Chicken Fingers',
     'Teriyaki Chicken',
   ],
   'Beef/Pork': [
-    'Kofta Kabob|G', 'Home Made Meatloaf with Gravy', 'Meatloaf', 'Braised Beef|G', 'Seared Skirt Steak with Rosemary|G',
+    'Grass-Fed Hamburgers|G', 'Kofta Kabob|G', 'Home Made Meatloaf with Gravy', 'Meatloaf', 'Braised Beef|G', 'Seared Skirt Steak with Rosemary|G',
     'Meatballs Marinara|G', 'Carnitas|G', 'Beef Taco|G', 'Beef Fajita|G', 'Hamburgers',
     'Beef Stew with Organic Potatoes and Carrots|G', 'Brisket|G', 'Rib-Eye|G', 'Filet Mignon in Hoisin Sauce',
     'Filet Mignon with Rosemary|G', 'Swedish Meatballs', 'Marinated Sliced Skirt Steak|G', "Shepherd's Pie",
@@ -83,16 +85,17 @@ const SEED: Record<Category, string[]> = {
   ],
   Fish: [
     'Seared Salmon with Spinach|G', 'Organic Seared Wild King Salmon with Spinach|G', 'Seared Teriyaki Salmon with Bok Choy|G',
-    'Salmon Teriyaki|G', 'Miso Glazed Cod Fish with Bok Choy|G', 'Tilapia with Capers and Lemon', 'Chilean Sea Bass with Miso|G',
+    'Salmon Teriyaki|G', 'Miso Glazed Cod Fish with Bok Choy|G', 'Tilapia with Capers and Lemon', 'Mild Coconut Curry Fish', 'Chilean Sea Bass with Miso|G',
     'Coconut Crusted Salmon', 'Crab Cakes', 'Grilled Salmon with Lemon Butter and Capers|G', 'Mahi-Mahi|G',
     'Panko Crusted Salmon Fillets with Horseradish Sauce', 'Poached Salmon|G', 'Rosemary Infused Cod|G',
     'Sea Bass with Tomato and Capers|G', 'Seared Tuna|G', "Slammin' Salmon (Cajun Spices)|G", 'Sweet Chili Salmon',
     'Tilapia Meuniere', 'Tilapia with Chive Oil and Capers|G', 'Tilapia with Corn Salsa|G', 'Tuna Steaks|G',
   ],
   'Vegetarian Main': [
-    'Falafel|V,G', 'Eggplant Parm|VT', 'Black Bean Meatballs|V,G', 'BBQ Tofu|V,G', 'Vegan Stuffed Tomatoes|V,G',
+    'Impossible Burgers|V,G', 'Black Bean Burgers|V,G', 'Chana Masala|V,G', 'Falafel|V,G', 'Eggplant Parm|VT', 'Black Bean Meatballs|V,G', 'BBQ Tofu|V,G', 'Vegan Stuffed Tomatoes|V,G',
   ],
   Vegetable: [
+    'Sauteed Portobello Mushrooms|V,G', 'Crispy Onions|V', 'Home-Made Potato Chips|V,G', 'Cumin-Roasted Cauliflower|V,G',
     'Organic Grilled Vegetables|V,G', 'Fried Eggplants|V,G', 'Roasted Acorn Squash|V,G', 'Roasted Butternut Squash|V,G',
     'Grilled Organic Asparagus and Broccolini|V,G', 'Creamy Mashed Potatoes|G', 'Mashed Potatoes|G', 'Sauteed Broccoli|V,G',
     'Sauteed Broccoli with Garlic|V,G', 'Steamed Broccoli|V,G', 'Collard Greens|V,G', 'Carrots and Zucchini|V,G',
@@ -106,10 +109,13 @@ const SEED: Record<Category, string[]> = {
     'Stuffed Tomatoes with Minced Meat|G',
   ],
   'Spread/Bread': [
+    'Fresh Guacamole|V,G', 'Cheese Toppers: Blue, Cheddar, Mozzarella, Swiss', 'Sliced Tomatoes, Onions and Pickles|V,G',
+    'Fresh Deli and Sliced Cheeses Selections', 'Fresh Baked Sandwich Rolls, Buns and Brioche',
     'Hummus, Tahini, Yogurt with Dill|G', 'Hummus, Tahini, Tzatziki Spreads|G', 'Fresh Pita|V', 'Tortillas|V',
     'Deli and Cheese Tray',
   ],
   Dessert: [
+    'Fresh Baked Blondies and Cookies', 'Fresh Berries with Mint|V,G', 'Mango Rice Pudding', 'Cardamom-Spiced Fresh Fruit',
     'Fresh Cookies', 'Fresh Cookies and Brownies', 'Fresh Blondies and Brownies', 'Baklava', 'French Macarons|G',
     'Belgian Chocolate Cake', 'Limoncello Cake', 'Red Velvet Cake', 'Cheesecake', 'Apple Pie', 'Blueberry Pie',
     'Berry Trifle', 'Chocolate Salted Caramel Trifle', 'Banana Cream Pie Trifle', 'Flan|G', 'Tres Leches',
