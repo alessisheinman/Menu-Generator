@@ -1,4 +1,13 @@
-Finished Menus/
+# Client material — never commit (public repo)
+Finished*/
+dog photos/
+*.zip
+*.docx
+*.doc
+*.pdf
+*.heic
+*.HEIC
+
+# Build
 node_modules/
 dist/
-dog photos/

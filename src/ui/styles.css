@@ -245,6 +245,8 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
 .dog-track { display: flex; flex-direction: column; gap: 14px; padding: 14px; animation: dog-scroll 420s linear infinite; }
 .dog-rail-right .dog-track { animation-direction: reverse; animation-duration: 360s; }
 .dog-rail:hover .dog-track, .dog-strip:hover .dog-track { animation-play-state: paused; }
+.dog-track img { cursor: zoom-in; transition: filter 0.15s; }
+.dog-track img:hover { filter: brightness(1.08); }
 .dog-track img {
   width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; flex: none;
   border: 5px solid #fff; border-bottom-width: 18px; border-radius: 3px;
@@ -252,7 +254,7 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
 }
 .dog-track img:nth-child(odd) { transform: rotate(-2deg); }
 .dog-track img:nth-child(even) { transform: rotate(1.5deg); }
-.app > :not(.dog-rail) { position: relative; z-index: 1; }
+.app > :not(.dog-rail):not(.dog-lightbox) { position: relative; z-index: 1; }
 
 .dog-strip {
   display: none;
@@ -334,3 +336,28 @@ body:has(.drag-chip, .drag-card, .page.lifted) * { cursor: grabbing !important; 
 .drop-hint { list-style: none; color: var(--muted); font-style: italic; font-size: 0.88rem; padding: 0.6rem 0.4rem; margin: 0; }
 .meals.empty-drop { border: 2px dashed var(--line); border-radius: var(--radius); margin-bottom: 0.75rem; padding: 0 0.6rem; }
 .preview-title + .hint { margin: -0.25rem 0 0.5rem; font-size: 0.8rem; }
+
+/* ---------- dog photo lightbox ---------- */
+.dog-lightbox {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center;
+  background: rgb(20 18 16 / 0.82);
+  cursor: zoom-out;
+  animation: dog-fade 0.18s ease-out;
+}
+.dog-lightbox-frame {
+  background: #fff;
+  padding: 12px 12px 40px; border-radius: 4px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.5);
+  animation: dog-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.dog-lightbox-frame img {
+  display: block;
+  height: calc(88vh - 52px); width: auto;
+  max-width: min(88vw, 1000px); object-fit: contain;
+}
+@keyframes dog-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dog-pop { from { transform: scale(0.85) rotate(-2deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .dog-lightbox, .dog-lightbox-frame { animation: none; }
+}
