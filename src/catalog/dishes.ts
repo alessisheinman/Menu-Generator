@@ -9,6 +9,8 @@ import type { Category, Dish, Tag } from '../model/types';
  */
 const SEED: Record<Category, string[]> = {
   Breakfast: [
+    // from the D+D 2026 menu
+    'Maple Bacon|G', 'Local Sausage and Thyme|G', 'Cinnamon Pancakes', 'Huevos Rancheros|G', 'Hash Brown Potatoes|V,G',
     'Pastries', 'Signature Crumb Cakes', 'Scrambled Organic Eggs|G', '“Just” Eggs Scrambled|V,G', 'Hard Boiled Eggs|G',
     'Egg Station|G', 'Shakshuka|VT,G', 'Crispy Bacon|G', 'Canadian Bacon|G', 'Local Sausage Patties|G',
     'Local Sausage Links|G', 'Local Turkey Sausage Patties|G', 'Vegan Sausage|V', 'Breakfast Potatoes|G',
@@ -23,6 +25,8 @@ const SEED: Record<Category, string[]> = {
     'Panini Toaster', 'Microwave', 'Chopsticks',
   ],
   Soup: [
+    // from the D+D 2026 menu
+    'Tomato and Rice Soup|V,G',
     'Lentil Soup|V,G', 'Moroccan Lentil Soup|V,G', 'Mulligatawny Soup|V,G', 'Tuscan White Bean Soup|V,G',
     'Tomato Cheddar Soup|G', 'Ten Vegetable Soup|V,G', 'Chicken Soup with Vegetables', 'Autumn Minestrone|V',
     'Black Bean Soup|V,G', 'Broccoli Cheddar Soup', 'Butternut Squash Soup|V,G', 'Carrot Ginger Soup|V,G',
@@ -31,6 +35,8 @@ const SEED: Record<Category, string[]> = {
     'Mushroom Barley Soup|V', 'Pumpkin Bisque|V,G', 'Split Pea Soup|V,G', 'Sweet Cherry Tomato Soup|V,G', 'Texas Chili|G',
   ],
   Sandwich: [
+    // from the D+D 2026 menu
+    'Mini Grilled Cheese Sandwiches on Country Bread',
     'Aged Cheddar and Chutney', 'Applewood Smoked Ham and Mustard', 'Arugula, Parmesan, Pine Nuts, Balsamic',
     'Avocado & Parmesan', 'Balsamic Chicken & Avocado', 'BLT', 'Crispy Chicken Cutlet', 'Chicken, Apple and Cranberry',
     'Classic Turkey Club', 'Green Goddess', 'Country Grilled Cheese', 'Grilled Veggie Wrap|V', 'Homemade Falafel Wraps|V',
@@ -45,6 +51,8 @@ const SEED: Record<Category, string[]> = {
     'Three Bean Salad|V,G', 'Yellow and Red Beet Salad|V,G',
   ],
   Pasta: [
+    // from the D+D 2026 menu
+    'Penne alla Vodka', 'Ricotta Ravioli with Toasted Sage|VT', 'Sesame Noodles', 'Vegetable Lo-Mein', 'Stir Fry Noodles with Tofu|V',
     '5 Cheese Jalapeño Mac and Cheese', 'Five Cheese Mac and Cheese',
     'Penne al Pomodoro|V', 'Rigatoni with Sausage and Peas', 'Spaghetti Aglio e Olio|V', 'Fettuccine Alfredo',
     'Home Made Lasagna', '3 Cheese Ravioli with Sage Butter', 'Alfredo Penne with Shitake Mushrooms and Parsley',
@@ -56,6 +64,8 @@ const SEED: Record<Category, string[]> = {
     'Rigatoni with Bolognese Sauce', 'Shrimp Pad Thai', 'Spaghetti alla Carbonara', 'Spaghetti and Meatballs',
   ],
   'Rice/Grains': [
+    // from the D+D 2026 menu
+    'Wild Rice Pilaf with Vegetable Medley|V,G', 'Jasmine Rice with Cranberries, Tofu and Dill|V,G', 'Yellow Rice with Vegetables', 'Steamed Jasmine Rice|V,G', 'Steamed White Rice|V,G', 'Basmati Rice with Vermicelli', 'Mexican Rice and Beans|V,G', 'Mexican Rice and Vegetables|V,G', 'Pork Fried Rice|G', 'Vegetable Fried Rice|V,G',
     'Basmati Rice|V,G', 'Vegetable Jambalaya|V,G', 'Basmati Rice with Dill|V,G', 'Brown Rice with Vegetables and Tofu|V,G',
     'Wild Rice with Vegetables and Tofu|V,G', 'Wild Rice with Edamame|V,G', 'Mexican Rice with Vegetables and Tofu|V,G',
     'Forbidden Rice with Vegetables and Tofu|V,G', 'Vegetarian Paella|V,G', 'Basmati Brown Rice with Dried Fruit|V,G',
@@ -66,6 +76,8 @@ const SEED: Record<Category, string[]> = {
     'Steamed Brown Rice|V,G', 'Veggie Couscous|V',
   ],
   Chicken: [
+    // from the D+D 2026 menu
+    'Kung Pao Chicken', 'Orange Ginger Chicken', 'Chicken and Broccoli',
     'Chicken Kabob|G', 'Grilled Chicken Paillard with Tomatoes and Arugula|G', 'Roasted Rosemary Chicken|G',
     'Free-Range Roasted Rosemary Chicken|G', 'Chicken Parm', 'Chicken Pot Pie', 'Chicken Fajita|G', 'BBQ Chicken|G',
     'Grilled Chicken Breasts with Grilled Veggies|G', 'Chicken Alfredo', 'Chicken Cacciatore|G', 'Chicken Chimichurri|G',
@@ -76,6 +88,8 @@ const SEED: Record<Category, string[]> = {
     'Teriyaki Chicken',
   ],
   'Beef/Pork': [
+    // from the D+D 2026 menu
+    'Sloppy Joe|G', 'Beef and Broccoli', 'Black Pepper Sirloin Steak', 'Bourbon Braised Beef', 'Tamari Shredded Pork', 'Vegetable, Chicken, Pork Dumplings', 'Vegetable, Pork, Shrimp Spring Rolls',
     'Grass-Fed Hamburgers|G', 'Kofta Kabob|G', 'Home Made Meatloaf with Gravy', 'Meatloaf', 'Braised Beef|G', 'Seared Skirt Steak with Rosemary|G',
     'Meatballs Marinara|G', 'Carnitas|G', 'Beef Taco|G', 'Beef Fajita|G', 'Hamburgers',
     'Beef Stew with Organic Potatoes and Carrots|G', 'Brisket|G', 'Rib-Eye|G', 'Filet Mignon in Hoisin Sauce',
@@ -92,9 +106,13 @@ const SEED: Record<Category, string[]> = {
     'Tilapia Meuniere', 'Tilapia with Chive Oil and Capers|G', 'Tilapia with Corn Salsa|G', 'Tuna Steaks|G',
   ],
   'Vegetarian Main': [
+    // from the D+D 2026 menu
+    'Vegan Taco Meat (faux meats)|V,G', 'Eggplant and Mushroom Fajitas|V,G', 'Tofu Steaks with Hoisin Sauce|V,G',
     'Impossible Burgers|V,G', 'Black Bean Burgers|V,G', 'Chana Masala|V,G', 'Falafel|V,G', 'Eggplant Parm|VT', 'Black Bean Meatballs|V,G', 'BBQ Tofu|V,G', 'Vegan Stuffed Tomatoes|V,G',
   ],
   Vegetable: [
+    // from the D+D 2026 menu
+    'Cauliflower in Garlic Sauce|V,G', 'Eggplants with Garlic Sauce', 'Super Greens', 'Grilled Organic Bok Choy', 'Vegetable Stir Fry', 'Charro Beans|V,G', 'Crispy Brussels Sprouts|V,G', "Baked Potato Bar with the Fixin's",
     'Sauteed Portobello Mushrooms|V,G', 'Crispy Onions|V', 'Home-Made Potato Chips|V,G', 'Cumin-Roasted Cauliflower|V,G',
     'Organic Grilled Vegetables|V,G', 'Fried Eggplants|V,G', 'Roasted Acorn Squash|V,G', 'Roasted Butternut Squash|V,G',
     'Grilled Organic Asparagus and Broccolini|V,G', 'Creamy Mashed Potatoes|G', 'Mashed Potatoes|G', 'Sauteed Broccoli|V,G',
@@ -109,12 +127,16 @@ const SEED: Record<Category, string[]> = {
     'Stuffed Tomatoes with Minced Meat|G',
   ],
   'Spread/Bread': [
+    // from the D+D 2026 menu
+    'Hard and Soft Taco Shells', 'Fresh Baked Breads with GF Options', 'Guacamole, Salsa, Sour Cream, Shredded Cheese',
     'Fresh Guacamole|V,G', 'Cheese Toppers: Blue, Cheddar, Mozzarella, Swiss', 'Sliced Tomatoes, Onions and Pickles|V,G',
     'Fresh Deli and Sliced Cheeses Selections', 'Fresh Baked Sandwich Rolls, Buns and Brioche',
     'Hummus, Tahini, Yogurt with Dill|G', 'Hummus, Tahini, Tzatziki Spreads|G', 'Fresh Pita|V', 'Tortillas|V',
     'Deli and Cheese Tray',
   ],
   Dessert: [
+    // from the D+D 2026 menu
+    'Lemon Bars', 'Chocolate Chip Cookies', 'Fresh Baked Sugar Cookies', 'Fresh Baked Crumb Cake', 'Brownies', 'Chocolate Cake', 'Black Forest Cake', 'Orange Cake', 'Mango Ice Cream', 'Sliced Watermelon|V,G', 'Pineapple and Oranges|V,G', 'Lychees|V,G',
     'Fresh Baked Blondies and Cookies', 'Fresh Berries with Mint|V,G', 'Mango Rice Pudding', 'Cardamom-Spiced Fresh Fruit',
     'Fresh Cookies', 'Fresh Cookies and Brownies', 'Fresh Blondies and Brownies', 'Baklava', 'French Macarons|G',
     'Belgian Chocolate Cake', 'Limoncello Cake', 'Red Velvet Cake', 'Cheesecake', 'Apple Pie', 'Blueberry Pie',
