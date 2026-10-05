@@ -123,7 +123,7 @@ export function EventList({ events, overrides, catalog, onOpen, setEvents, setOv
                 <li key={ev.id}>
                   <button type="button" className="event-open" onClick={() => onOpen(ev.id)}>
                     <strong>{ev.name}</strong>
-                    <span>{ev.venueLabel || 'No venue'} · {ev.days.length} day{ev.days.length === 1 ? '' : 's'} · {meals} meal{meals === 1 ? '' : 's'}</span>
+                    <span>{ev.venueLabel || 'No venue'}, {ev.days.length} day{ev.days.length === 1 ? '' : 's'}, {meals} meal{meals === 1 ? '' : 's'}</span>
                     <time>Edited {new Date(ev.updatedAt).toLocaleString()}</time>
                   </button>
                   <div className="row">

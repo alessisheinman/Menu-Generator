@@ -108,10 +108,10 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
     }
     if (dragging.type === 'meal') {
       const hit = findMeal(event, dragging.id);
-      return hit && <div className="drag-card"><span className="meal-type">{hit.meal.type}</span> {formatHeader(hit.day.label, '', hit.meal).filter(Boolean).join(' · ')}</div>;
+      return hit && <div className="drag-card"><span className="meal-type">{hit.meal.type}</span> {formatHeader(hit.day.label, '', hit.meal).filter(Boolean).join(', ')}</div>;
     }
     const day = event.days.find((d) => d.id === dragging.id);
-    return day && <div className="drag-card day-card">{day.label || 'Day'} · {day.meals.length} meal{day.meals.length === 1 ? '' : 's'}</div>;
+    return day && <div className="drag-card day-card">{day.label || 'Day'}, {day.meals.length} meal{day.meals.length === 1 ? '' : 's'}</div>;
   };
 
   const download = async () => {
