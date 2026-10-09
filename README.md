@@ -9,6 +9,8 @@ Build catered-event kitchen menus from saved dishes and templates, then download
 3. Type quantities. Swap dishes with ⇄, search any dish, add note lines, drag or ↑↓ to reorder, duplicate meals or whole days.
 4. **Download .docx**.
 
+**From an approved proposal:** Events → **From proposal…** lists the proposals saved in this browser by the Proposed Menu Generator (both sites share alessisheinman.github.io, so they can see each other's saved data), or choose a proposal backup file. Days, meals, dishes and tags come across; descriptions are dropped and quantities are left blank.
+
 Everything saves automatically in this browser. Use **Export backup** regularly and **Import** to move to another computer.
 The **Catalog** tab edits dishes, tags, templates, venues and the salad bar (affects new menus only).
 

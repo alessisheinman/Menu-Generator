@@ -4,6 +4,7 @@ import { defaultFileName } from '../model/format';
 import { newId } from '../model/ids';
 import type { Catalog, CatalogOverrides, ExportFile, MenuEvent } from '../model/types';
 import { buildExport, findConflicts, mergeImport, parseImport, type ConflictChoice } from '../storage/exportImport';
+import { parseProposals, proposalToKitchen, readBrowserProposals, type Proposal } from '../storage/fromProposal';
 import { ConfirmButton } from './common';
 import { saveBlob } from './useAppState';
 
@@ -23,6 +24,9 @@ export function EventList({ events, overrides, catalog, onOpen, setEvents, setOv
   const [importMsg, setImportMsg] = useState('');
   const [pending, setPending] = useState<{ file: ExportFile; conflicts: MenuEvent[]; withCatalog: boolean } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const proposalFileRef = useRef<HTMLInputElement>(null);
+  const [proposals, setProposals] = useState<Proposal[] | null>(null); // null = picker closed
+  const [proposalMsg, setProposalMsg] = useState('');
 
   const create = () => {
     const n = name.trim() || 'Untitled event';
@@ -57,6 +61,30 @@ export function EventList({ events, overrides, catalog, onOpen, setEvents, setOv
     else finishImport(res.file, 'keepBoth', false);
   };
 
+  // ---------- approved proposal → kitchen menu ----------
+  const openProposalPicker = () => {
+    setProposalMsg('');
+    let store: Storage | null = null;
+    try { store = window.localStorage; } catch { /* storage blocked */ }
+    setProposals(readBrowserProposals(store));
+  };
+  const importProposal = (p: Proposal) => {
+    const ev = proposalToKitchen(p, catalog);
+    setEvents((all) => [ev, ...all]);
+    setProposals(null);
+    onOpen(ev.id);
+  };
+  const onProposalFile = async (f: File | undefined) => {
+    if (!f) return;
+    const res = parseProposals(await f.text());
+    if (proposalFileRef.current) proposalFileRef.current.value = '';
+    if (!res.ok) return setProposalMsg(res.error);
+    if (res.proposals.length === 0) return setProposalMsg('That file has no proposals in it.');
+    if (res.proposals.length === 1) return importProposal(res.proposals[0]);
+    setProposals(res.proposals); // a backup with several proposals: let them pick
+    setProposalMsg(`Found ${res.proposals.length} proposals in that file — pick one.`);
+  };
+
   const sorted = [...events].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   return (
@@ -82,11 +110,41 @@ export function EventList({ events, overrides, catalog, onOpen, setEvents, setOv
           <h2>Events</h2>
           <div className="list-tools">
             <button type="button" onClick={exportAll} disabled={events.length === 0}>Export backup</button>
+            <button type="button" onClick={openProposalPicker} title="Start a kitchen menu from an approved client proposal">From proposal…</button>
             <button type="button" onClick={() => fileRef.current?.click()}>Import…</button>
             <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </div>
         </div>
 
+        {proposals && (
+          <div className="notice proposal-picker">
+            <p><strong>Start from an approved proposal.</strong> Days, meals, dishes and dietary tags come across; descriptions are left out and quantities are blank for you to fill in.</p>
+            {proposals.length === 0 ? (
+              <p className="muted">No proposals are saved in this browser. Choose a proposal backup file from the Proposed Menu Generator instead.</p>
+            ) : (
+              <ul className="proposal-list">
+                {[...proposals].sort((a, b) => String(b.updatedAt ?? '').localeCompare(String(a.updatedAt ?? ''))).map((p) => {
+                  const pages = p.days.reduce((n, d) => n + (d.meals?.length ?? 0), 0);
+                  return (
+                    <li key={p.id}>
+                      <span>
+                        <strong>{p.name}</strong>
+                        <small>{p.venue || 'No venue'}, {pages} page{pages === 1 ? '' : 's'}{p.updatedAt ? `, edited ${new Date(p.updatedAt).toLocaleDateString()}` : ''}</small>
+                      </span>
+                      <button type="button" className="primary" onClick={() => importProposal(p)}>Make kitchen menu</button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {proposalMsg && <p className="error">{proposalMsg}</p>}
+            <div className="row">
+              <button type="button" onClick={() => proposalFileRef.current?.click()}>Choose a proposal file…</button>
+              <input ref={proposalFileRef} type="file" accept=".json,application/json" hidden onChange={(e) => onProposalFile(e.target.files?.[0])} />
+              <button type="button" className="ghost" onClick={() => setProposals(null)}>Cancel</button>
+            </div>
+          </div>
+        )}
         {importMsg && <p className="notice">{importMsg}</p>}
         {pending && (
           <div className="notice">

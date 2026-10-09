@@ -400,3 +400,10 @@ body:has(.drag-chip, .drag-card, .page.lifted) * { cursor: grabbing !important; 
 .dish-table tr:hover td > button:not(.tag), .template-table tr:hover td > button { border-color: var(--line-strong); color: var(--ink); }
 .dish-table td > button.danger.armed { background: var(--red); border-color: var(--red); color: #fff; }
 .dish-table tbody tr:hover { background: var(--surface-2); }
+
+/* ---------- start a kitchen menu from an approved proposal ---------- */
+.proposal-picker p { margin: 0 0 0.6rem; }
+.proposal-list { list-style: none; margin: 0 0 0.75rem; padding: 0; display: grid; gap: 0.4rem; }
+.proposal-list li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.5rem 0.6rem; border-radius: 6px; background: rgb(255 255 255 / 0.55); }
+.proposal-list li > span { display: grid; gap: 0.1rem; }
+.proposal-list small { color: var(--muted); }
