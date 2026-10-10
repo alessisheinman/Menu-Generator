@@ -16,7 +16,8 @@ export const PROPOSAL_STORAGE_KEY = 'proposed-menu-generator:v1';
 export interface ProposalDishLine { kind: 'dish'; dishName?: string; tags?: unknown[]; slot?: string; alternatives?: unknown[]; sourceDishId?: string }
 export interface ProposalTextLine { kind: 'text'; text?: string }
 export interface ProposalMeal { type?: string; title?: string; templateId?: string; lines?: (ProposalDishLine | ProposalTextLine)[] }
-export interface ProposalDay { dateLabel?: string; meals?: ProposalMeal[] }
+/** `date` (YYYY-MM-DD) is set when the day was picked on the proposal calendar; older proposals only have a typed `dateLabel`. */
+export interface ProposalDay { date?: string; dateLabel?: string; meals?: ProposalMeal[] }
 export interface Proposal { id: string; name: string; venue?: string; days: ProposalDay[]; updatedAt?: string }
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -50,11 +51,28 @@ export function readBrowserProposals(storage: Pick<Storage, 'getItem'> | null): 
 }
 
 const WEEKDAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-/** "Tuesday, November 10" → "TUESDAY"; anything else is kept as typed, uppercased. */
-export function kitchenDayLabel(dateLabel: string): string {
+const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+/**
+ * The kitchen day label, weekday first with the date after it: "WEDNESDAY 10/14".
+ * Uses the proposal's calendar date when there is one, otherwise reads a typed line like
+ * "Tuesday, November 10"; anything unrecognised is kept as typed, uppercased.
+ */
+export function kitchenDayLabel(dateLabel: string, date?: string): string {
+  const iso = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
+  if (iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return `${WEEKDAYS[new Date(y, m - 1, d).getDay()]} ${m}/${d}`;
+  }
   const t = dateLabel.trim().toUpperCase();
-  const hit = WEEKDAYS.find((d) => t.startsWith(d) || new RegExp(`^${d.slice(0, 3)}\\b`).test(t));
-  return hit ?? t;
+  const weekday = WEEKDAYS.find((d) => t.startsWith(d) || new RegExp(`^${d.slice(0, 3)}\\b`).test(t));
+  if (!weekday) return t;
+  const md = t.match(/\b([A-Z]{3,9})\.?\s+(\d{1,2})\b/g)
+    ?.map((s) => s.match(/([A-Z]+)\.?\s+(\d+)/)!)
+    .find((x) => MONTHS.some((mo) => mo.startsWith(x[1]))); // "NOV" or "NOVEMBER", not "TUESDAY"
+  if (!md) return weekday;
+  const month = MONTHS.findIndex((mo) => mo.startsWith(md[1])) + 1;
+  return `${weekday} ${month}/${Number(md[2])}`;
 }
 
 const STANDARD_TITLES: Record<MealType, string> = { Breakfast: 'BREAKFAST', Lunch: 'LUNCH', Dinner: 'DINNER', Custom: 'MENU' };
@@ -113,7 +131,7 @@ export function proposalToKitchen(p: Proposal, catalog: Catalog, year = new Date
     updatedAt: new Date().toISOString(),
     days: p.days.map((d) => ({
       id: newId(),
-      label: kitchenDayLabel(String(d.dateLabel ?? '')),
+      label: kitchenDayLabel(String(d.dateLabel ?? ''), typeof d.date === 'string' ? d.date : undefined),
       meals: (d.meals ?? []).filter((m): m is ProposalMeal => isObj(m)).map((m): Meal => {
         const type: MealType = MEAL_TYPES.includes(m.type as MealType) ? (m.type as MealType) : 'Custom';
         const title = String(m.title ?? '').trim().toUpperCase();

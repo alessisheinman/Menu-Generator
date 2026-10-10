@@ -62,9 +62,14 @@ describe('parseProposals', () => {
 });
 
 describe('kitchenDayLabel', () => {
-  it('turns a date line into the weekday', () => {
-    expect(kitchenDayLabel('Tuesday, November 10')).toBe('TUESDAY');
-    expect(kitchenDayLabel('Sat Nov 14')).toBe('SATURDAY');
+  it('uses the calendar date: weekday first, then month/day', () => {
+    expect(kitchenDayLabel('Wednesday, October 14', '2026-10-14')).toBe('WEDNESDAY 10/14');
+    expect(kitchenDayLabel('', '2026-01-05')).toBe('MONDAY 1/5');
+  });
+  it('reads older typed date lines too', () => {
+    expect(kitchenDayLabel('Tuesday, November 10')).toBe('TUESDAY 11/10');
+    expect(kitchenDayLabel('Sat Nov 14')).toBe('SATURDAY 11/14');
+    expect(kitchenDayLabel('Friday')).toBe('FRIDAY');
     expect(kitchenDayLabel('11.10.2026')).toBe('11.10.2026');
     expect(kitchenDayLabel('')).toBe('');
   });
@@ -76,7 +81,7 @@ describe('proposalToKitchen', () => {
 
   it('fills the event header like a new kitchen menu', () => {
     expect(ev).toMatchObject({ name: 'ENHYPEN World Tour', venueLabel: 'RCMH', fileName: 'ENHYPEN World Tour Kitchen Menu 2026.docx' });
-    expect(ev.days[0].label).toBe('TUESDAY');
+    expect(ev.days[0].label).toBe('TUESDAY 11/10');
     expect(ev.id).not.toBe('p1');
   });
   it('drops descriptions and leaves quantities, units, time and headcount blank', () => {
@@ -102,6 +107,10 @@ describe('proposalToKitchen', () => {
   });
   it('puts a non-standard page heading on the red header line', () => {
     expect(overnight).toMatchObject({ type: 'Custom', headerNote: 'OVERNIGHT MEAL', lines: [] });
+  });
+  it('carries calendar-picked dates across', () => {
+    const picked = { ...proposal, days: [{ ...proposal.days[0], date: '2026-10-14', dateLabel: 'Wednesday, October 14' }] } as unknown as Proposal;
+    expect(proposalToKitchen(picked, catalog).days[0].label).toBe('WEDNESDAY 10/14');
   });
   it('keeps an unknown venue as typed', () => {
     expect(proposalToKitchen({ ...(proposal as unknown as Proposal), venue: 'UBS Arena' }, catalog).venueLabel).toBe('UBS Arena');
