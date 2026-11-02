@@ -107,6 +107,26 @@ describe('proposalToKitchen', () => {
     expect(lunch.templateId).toBe('lunch-italian');
     expect(bf.templateId).toBeUndefined(); // not a kitchen template id
   });
+  it('turns a breakfast omelette station and burritos into the kitchen station lines, in place', () => {
+    const withStations = (type: string) => ({
+      ...proposal,
+      days: [{ ...proposal.days[0], meals: [{ id: 'm', type, title: type.toUpperCase(), lines: [
+        { kind: 'dish', id: 'a', dishName: 'Fresh Baked Pastries', tags: [] },
+        { kind: 'dish', id: 'b', dishName: 'Omelette Station', tags: ['GF'] },
+        { kind: 'dish', id: 'c', dishName: 'Assorted Burritos', tags: [] },
+        { kind: 'dish', id: 'd', dishName: 'Breakfast Burritos', tags: [] },
+      ] }] }],
+    }) as unknown as Proposal;
+    const stationCatalog = { ...catalog, omelette: { standard: ['ham', 'onions'], addOns: [] }, burritoKinds: [{ code: 'B/E/C', name: 'Bacon, Egg & Cheese' }] };
+
+    const kitchenBf = proposalToKitchen(withStations('Breakfast'), stationCatalog).days[0].meals[0];
+    expect(kitchenBf.lines.map((l) => l.kind)).toEqual(['dish', 'omelette', 'burritos']); // one burrito line, not two
+    expect(kitchenBf.lines[1]).toMatchObject({ eggs: '', items: ['ham', 'onions'] });
+    expect(kitchenBf.lines[2]).toMatchObject({ kinds: [{ code: 'B/E/C', qty: null }] });
+
+    const kitchenLunch = proposalToKitchen(withStations('Lunch'), stationCatalog).days[0].meals[0];
+    expect(kitchenLunch.lines.map((l) => l.kind)).toEqual(['dish', 'dish', 'dish', 'dish']); // stations are breakfast only
+  });
   it('puts a non-standard page heading on the red header line', () => {
     expect(overnight).toMatchObject({ type: 'Custom', headerNote: 'OVERNIGHT MEAL', lines: [] });
   });

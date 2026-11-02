@@ -1,4 +1,4 @@
-import { emptySlotLine, saladLine, textLine } from '../model/event';
+import { burritoLine, emptySlotLine, omeletteLine, saladLine, textLine } from '../model/event';
 import { defaultFileName } from '../model/format';
 import { newId } from '../model/ids';
 import { MEAL_TYPES, SLOTS, TAGS, type Catalog, type DishLine, type Line, type Meal, type MealType, type MenuEvent, type Slot, type Tag } from '../model/types';
@@ -78,6 +78,9 @@ export function kitchenDayLabel(dateLabel: string, date?: string): string {
 const STANDARD_TITLES: Record<MealType, string> = { Breakfast: 'BREAKFAST', Lunch: 'LUNCH', Dinner: 'DINNER', Custom: 'MENU' };
 /** Proposal salad lines ("Salad World", "Fresh Salad Bar Medley"…) become the kitchen salad bar line. */
 const SALAD_BAR = /^(salad world|fresh salad bar medley|salad medley|salad bar)\b/i;
+/** On breakfast pages these become the kitchen omelette station / burrito lines (one of each). */
+const OMELETTE_STATION = /^(omelett?e station|egg station)\b/i;
+const BURRITOS = /^(assorted |breakfast )?burritos?\b/i;
 
 export function proposalToKitchen(p: Proposal, catalog: Catalog, year = new Date().getFullYear()): MenuEvent {
   const byId = new Map(catalog.dishes.map((d) => [d.id, d]));
@@ -86,9 +89,14 @@ export function proposalToKitchen(p: Proposal, catalog: Catalog, year = new Date
   const venueText = (p.venue ?? '').trim();
   const venue = catalog.venues.find((v) => [v.name, v.printLabel].some((n) => n.toLowerCase() === venueText.toLowerCase()));
 
-  const toLines = (lines: ProposalMeal['lines'] = []): Line[] => {
+  const toLines = (lines: ProposalMeal['lines'] = [], type: MealType): Line[] => {
     const out: Line[] = [];
     let hasSalad = false;
+    const stations = [
+      { pattern: OMELETTE_STATION, make: () => omeletteLine(catalog.omelette.standard) },
+      { pattern: BURRITOS, make: () => burritoLine(catalog.burritoKinds) },
+    ].filter(() => type === 'Breakfast');
+    const added = new Set<RegExp>();
     for (const l of lines) {
       if (!isObj(l)) continue;
       if (l.kind === 'text') {
@@ -106,6 +114,12 @@ export function proposalToKitchen(p: Proposal, catalog: Catalog, year = new Date
       if (SALAD_BAR.test(name)) {
         if (!hasSalad) out.push(saladLine(catalog.saladBar.standard));
         hasSalad = true;
+        continue;
+      }
+      const station = stations.find((s) => s.pattern.test(name));
+      if (station) {
+        if (!added.has(station.pattern)) out.push(station.make());
+        added.add(station.pattern);
         continue;
       }
       const match = (l.sourceDishId && byId.get(l.sourceDishId)) || byName.get(name.toLowerCase());
@@ -143,7 +157,7 @@ export function proposalToKitchen(p: Proposal, catalog: Catalog, year = new Date
           // A non-standard page heading (e.g. OVERNIGHT MEAL) goes on the red header line.
           headerNote: title && title !== STANDARD_TITLES[type] ? title : '',
           templateId: m.templateId && templateIds.has(m.templateId) ? m.templateId : undefined,
-          lines: toLines(m.lines),
+          lines: toLines(m.lines, type),
         };
       }),
     })),
