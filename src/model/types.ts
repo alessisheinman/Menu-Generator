@@ -50,12 +50,18 @@ export interface MealTemplate {
 }
 
 export interface SaladBarConfig { standard: string[]; addOns: string[]; }
+/** Omelette fillings: standard ones start ticked, add-ons are offered. */
+export type OmeletteConfig = SaladBarConfig;
+/** A breakfast burrito kind: `code` prints on the menu (B/E/C), `name` is shown on screen. */
+export interface BurritoKind { code: string; name: string; }
 
 export interface Catalog {
   dishes: Dish[];
   templates: MealTemplate[];
   venues: Venue[];
   saladBar: SaladBarConfig;
+  omelette: OmeletteConfig;
+  burritoKinds: BurritoKind[];
 }
 
 export type SaladSize = '' | 'Small' | 'Medium' | 'Large';
@@ -75,7 +81,11 @@ export interface DishLine {
 }
 export interface TextLine { kind: 'text'; id: string; text: string; }
 export interface SaladLine { kind: 'salad'; id: string; size: SaladSize; items: string[]; }
-export type Line = DishLine | TextLine | SaladLine;
+/** Breakfast only. */
+export interface OmeletteLine { kind: 'omelette'; id: string; eggs: string; items: string[]; }
+/** Breakfast only; the printed total is the sum of the kinds' counts. */
+export interface BurritoLine { kind: 'burritos'; id: string; kinds: { code: string; qty: number | null }[]; }
+export type Line = DishLine | TextLine | SaladLine | OmeletteLine | BurritoLine;
 
 export interface Meal {
   id: string;
@@ -102,6 +112,8 @@ export interface CatalogOverrides {
   templates?: MealTemplate[];
   venues?: Venue[];
   saladBar?: SaladBarConfig;
+  omelette?: OmeletteConfig;
+  burritoKinds?: BurritoKind[];
 }
 
 export interface ExportFile {

@@ -15,6 +15,17 @@ export function formatLine(line: Line): string {
       return line.text.trim();
     case 'salad':
       return `Salad with${line.size ? ` ${line.size}` : ''}: ${line.items.join(', ')}`;
+    case 'omelette': {
+      const eggs = line.eggs.trim();
+      const head = joinParts([eggs ? `${eggs} EGGS` : '', 'OMELETTE STATION']);
+      return line.items.length ? `${head}: ${line.items.join(', ')}` : head;
+    }
+    case 'burritos': {
+      const counted = line.kinds.filter((k) => (k.qty ?? 0) > 0);
+      if (counted.length === 0) return 'Assorted Burritos';
+      const total = counted.reduce((sum, k) => sum + (k.qty ?? 0), 0);
+      return `${total} Assorted Burritos: ${counted.map((k) => `${k.qty} ${k.code}`).join(', ')}`;
+    }
     case 'dish':
       if (!line.dishName.trim()) return '';
       return joinParts([line.qty, line.unit, line.dishName, formatTags(line.tags), line.note]);

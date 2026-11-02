@@ -166,7 +166,7 @@ button.danger.armed { background: var(--red); border-color: var(--red); color: #
   padding: 0.22rem 0.35rem; border-radius: 8px; border: 1px solid transparent;
 }
 .line:hover { background: var(--surface-2); border-color: var(--line); }
-.line-text .text-line, .line-salad .salad { grid-column: 2 / 7; }
+.line-text .text-line, .line-salad .salad, .line-omelette .salad, .line-burritos .salad { grid-column: 2 / 7; }
 .line-text .text-line { font-weight: 600; border-style: dashed; }
 .row-actions { display: flex; gap: 2px; opacity: 0.35; }
 .line:hover .row-actions, .line:focus-within .row-actions { opacity: 1; }
@@ -211,6 +211,14 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
 .chip { font-size: 0.82rem; padding: 0.15rem 0.55rem; border-radius: 999px; color: var(--muted); }
 .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
 .chip-add { width: 8rem; font-size: 0.82rem; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.station { border-color: #e6d7b8; background: #fbf7ee; }
+.station-count { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--muted); }
+.station-count input { width: 4rem; }
+.station-total { font-size: 0.85rem; color: var(--muted); }
+.burrito { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.5rem 0.15rem 0.2rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.burrito input { width: 3.6rem; padding: 0.15rem 0.35rem; border-radius: 999px; }
+.burrito span { font-weight: 700; font-size: 0.85rem; }
+.burrito small { color: var(--muted); font-size: 0.75rem; }
 
 .meal-foot { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.55rem 1rem 0.75rem; border-top: 1px solid var(--line); }
 .suggestions { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; padding: 0 1rem 0.85rem; font-size: 0.85rem; color: var(--muted); }
@@ -336,7 +344,7 @@ input::placeholder { color: #b3ada2; font-weight: 400; }
   .line { grid-template-columns: 18px 3.2rem 4rem 1fr auto; }
   .line .tags { grid-column: 2 / 4; }
   .line .note { grid-column: 4 / 5; }
-  .line-text .text-line, .line-salad .salad { grid-column: 2 / 5; }
+  .line-text .text-line, .line-salad .salad, .line-omelette .salad, .line-burritos .salad { grid-column: 2 / 5; }
   .salad-config { grid-template-columns: 1fr; }
 }
 

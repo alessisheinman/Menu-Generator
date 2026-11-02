@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createDay, createEvent } from '../model/event';
 import type { Catalog, MenuEvent } from '../model/types';
-import { deleteDish, emptyOverrides, mergeCatalog, upsertDish } from './catalog';
+import { burritoKindsText, deleteDish, emptyOverrides, mergeCatalog, parseBurritoKinds, upsertDish } from './catalog';
 import { buildExport, findConflicts, mergeImport, parseImport, shouldRemindExport } from './exportImport';
 import { emptyState, loadState, saveState, type KeyValueStore } from './persist';
 
@@ -13,7 +13,22 @@ const seed: Catalog = {
   templates: [],
   venues: [{ id: 'v', name: 'Venue', printLabel: 'V' }],
   saladBar: { standard: ['x'], addOns: [] },
+  omelette: { standard: ['ham'], addOns: [] },
+  burritoKinds: [{ code: 'B/E/C', name: 'Bacon, Egg & Cheese' }],
 };
+
+describe('burrito kinds text', () => {
+  it('reads one "CODE = Name" per line, uppercasing codes and skipping blanks and repeats', () => {
+    expect(parseBurritoKinds('EGG/CH = Egg & Cheese\n\n b/e/c=Bacon, Egg & Cheese \nVEG\nveg = again')).toEqual([
+      { code: 'EGG/CH', name: 'Egg & Cheese' },
+      { code: 'B/E/C', name: 'Bacon, Egg & Cheese' },
+      { code: 'VEG', name: 'VEG' },
+    ]);
+  });
+  it('writes them back the same way', () => {
+    expect(burritoKindsText([{ code: 'S/E/C', name: 'Sausage, Egg & Cheese' }])).toBe('S/E/C = Sausage, Egg & Cheese');
+  });
+});
 
 describe('mergeCatalog', () => {
   it('applies edits, additions and deletions over the seed', () => {
@@ -32,6 +47,11 @@ describe('mergeCatalog', () => {
     let o = deleteDish(emptyOverrides(), 'a');
     o = upsertDish(o, { id: 'a', name: 'Back', category: 'Soup', tags: [] });
     expect(mergeCatalog(seed, o).dishes.map((d) => d.name)).toContain('Back');
+  });
+  it('uses edited omelette fillings and burrito kinds, else the seed ones', () => {
+    expect(mergeCatalog(seed, emptyOverrides())).toMatchObject({ omelette: seed.omelette, burritoKinds: seed.burritoKinds });
+    const mine = { omelette: { standard: ['spinach'], addOns: [] }, burritoKinds: [{ code: 'VEG', name: 'Veggie' }] };
+    expect(mergeCatalog(seed, { ...emptyOverrides(), ...mine })).toMatchObject(mine);
   });
 });
 

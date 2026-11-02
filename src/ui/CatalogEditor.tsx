@@ -4,7 +4,7 @@ import {
   CATEGORIES, MEAL_TYPES, SLOTS, type Catalog, type CatalogOverrides, type Category, type Dish, type MealTemplate, type Slot,
   type TemplateLine, type Venue,
 } from '../model/types';
-import { SEED_CATALOG, byName, deleteDish, emptyOverrides, upsertDish } from '../storage/catalog';
+import { SEED_CATALOG, burritoKindsText, byName, deleteDish, emptyOverrides, parseBurritoKinds, upsertDish } from '../storage/catalog';
 import { move } from '../model/event';
 import { CommitInput, ConfirmButton, TagToggles } from './common';
 
@@ -14,7 +14,7 @@ interface Props {
   setOverrides: (fn: (o: CatalogOverrides) => CatalogOverrides) => void;
 }
 
-type Tab = 'dishes' | 'templates' | 'venues' | 'salad';
+type Tab = 'dishes' | 'templates' | 'venues' | 'salad' | 'breakfast';
 
 export function CatalogEditor({ catalog, overrides, setOverrides }: Props) {
   const [tab, setTab] = useState<Tab>('dishes');
@@ -26,7 +26,7 @@ export function CatalogEditor({ catalog, overrides, setOverrides }: Props) {
       </div>
       <p className="hint">Changes here affect new menus only. Saved events keep the names and tags they were made with.</p>
       <nav className="tabs" role="tablist">
-        {([['dishes', `Dishes (${catalog.dishes.length})`], ['templates', 'Templates'], ['venues', 'Venues'], ['salad', 'Salad bar']] as [Tab, string][]).map(([t, label]) => (
+        {([['dishes', `Dishes (${catalog.dishes.length})`], ['templates', 'Templates'], ['venues', 'Venues'], ['salad', 'Salad bar'], ['breakfast', 'Omelettes & burritos']] as [Tab, string][]).map(([t, label]) => (
           <button key={t} type="button" role="tab" aria-selected={tab === t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{label}</button>
         ))}
       </nav>
@@ -34,6 +34,7 @@ export function CatalogEditor({ catalog, overrides, setOverrides }: Props) {
       {tab === 'templates' && <TemplatesTab catalog={catalog} setTemplates={(t) => setOverrides((o) => ({ ...o, templates: t }))} />}
       {tab === 'venues' && <VenuesTab venues={catalog.venues} setVenues={(v) => setOverrides((o) => ({ ...o, venues: v }))} />}
       {tab === 'salad' && <SaladTab catalog={catalog} setOverrides={setOverrides} />}
+      {tab === 'breakfast' && <BreakfastTab catalog={catalog} setOverrides={setOverrides} />}
     </div>
   );
 }
@@ -220,6 +221,29 @@ function SaladTab({ catalog, setOverrides }: { catalog: Catalog; setOverrides: P
       </label>
       <label className="field"><span>Optional add-ons (one per line)</span>
         <textarea rows={10} value={addOns} onChange={(e) => setAddOns(e.target.value)} onBlur={save} />
+      </label>
+    </div>
+  );
+}
+
+function BreakfastTab({ catalog, setOverrides }: { catalog: Catalog; setOverrides: Props['setOverrides'] }) {
+  const toText = (l: string[]) => l.join('\n');
+  const toList = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
+  const [standard, setStandard] = useState(toText(catalog.omelette.standard));
+  const [addOns, setAddOns] = useState(toText(catalog.omelette.addOns));
+  const [kinds, setKinds] = useState(burritoKindsText(catalog.burritoKinds));
+  const saveOmelette = () => setOverrides((o) => ({ ...o, omelette: { standard: toList(standard), addOns: toList(addOns) } }));
+  const saveKinds = () => setOverrides((o) => ({ ...o, burritoKinds: parseBurritoKinds(kinds) }));
+  return (
+    <div className="salad-config">
+      <label className="field"><span>Omelette fillings, ticked by default (one per line)</span>
+        <textarea rows={8} value={standard} onChange={(e) => setStandard(e.target.value)} onBlur={saveOmelette} />
+      </label>
+      <label className="field"><span>Other omelette fillings offered (one per line)</span>
+        <textarea rows={8} value={addOns} onChange={(e) => setAddOns(e.target.value)} onBlur={saveOmelette} />
+      </label>
+      <label className="field"><span>Burrito kinds — what prints = full name, one per line (e.g. VEG = Veggie)</span>
+        <textarea rows={6} value={kinds} onChange={(e) => setKinds(e.target.value)} onBlur={saveKinds} />
       </label>
     </div>
   );

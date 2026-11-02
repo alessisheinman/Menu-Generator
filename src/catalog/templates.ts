@@ -1,5 +1,5 @@
 import { slugify } from '../model/ids';
-import type { MealTemplate, SaladBarConfig, Slot, TemplateLine, Venue } from '../model/types';
+import type { BurritoKind, MealTemplate, OmeletteConfig, SaladBarConfig, Slot, TemplateLine, Venue } from '../model/types';
 
 /** Reference dishes by their catalog name; the seed test checks every name exists. */
 const d = (name: string, opts: Omit<TemplateLine, 'dishId'> & { alts?: string[] } = {}): TemplateLine => {
@@ -14,6 +14,17 @@ export const SEED_SALAD_BAR: SaladBarConfig = {
   standard: ['Cherry Tomatoes', 'Cucumbers', 'Shredded Carrots', 'Beets', 'Garbanzo Beans', 'Broccoli', 'Croutons', 'Peas', 'Corn'],
   addOns: ['Tuna', 'Chicken Salad', 'Egg Salad', 'Salsa', 'Sour Cream', 'Jalapeños', 'Celery', 'Shredded Cheese'],
 };
+
+export const SEED_OMELETTE: OmeletteConfig = {
+  standard: ['ham', 'shredded cheese', 'onions', 'peppers', 'mushrooms', 'parsley'],
+  addOns: ['grilled chicken'],
+};
+
+export const SEED_BURRITO_KINDS: BurritoKind[] = [
+  { code: 'EGG/CH', name: 'Egg & Cheese' },
+  { code: 'B/E/C', name: 'Bacon, Egg & Cheese' },
+  { code: 'S/E/C', name: 'Sausage, Egg & Cheese' },
+];
 
 const BREAKFAST_EXTRAS = [
   extra('Fresh Fruits'), extra('Espresso'), extra('Juicer'), extra('Snacks'), extra('Hard Boiled Eggs'),

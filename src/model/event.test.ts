@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  applyTemplate, createDay, createEvent, createMeal, duplicateDay, duplicateMeal, insertAfter, mapMeal, move,
-  setLineDish, templateSuggestions, validateEvent,
+  addBreakfastStation, applyTemplate, breakfastStationsAvailable, createDay, createEvent, createMeal, duplicateDay,
+  duplicateMeal, insertAfter, mapMeal, move, setLineDish, templateSuggestions, validateEvent,
 } from './event';
-import type { Catalog, DishLine, MealTemplate } from './types';
+import type { BurritoLine, Catalog, DishLine, MealTemplate } from './types';
 
 const catalog: Catalog = {
   dishes: [
@@ -15,6 +15,8 @@ const catalog: Catalog = {
   templates: [],
   venues: [],
   saladBar: { standard: ['Cherry Tomatoes', 'Corn'], addOns: ['Tuna'] },
+  omelette: { standard: ['ham', 'shredded cheese'], addOns: ['grilled chicken'] },
+  burritoKinds: [{ code: 'EGG/CH', name: 'Egg & Cheese' }, { code: 'B/E/C', name: 'Bacon, Egg & Cheese' }],
 };
 
 const breakfast: MealTemplate = {
@@ -55,6 +57,45 @@ describe('createMeal / applyTemplate', () => {
     catalog.dishes[0].tags.push('Vegan');
     expect((meal.lines[0] as DishLine).tags).toEqual(['GF']);
     catalog.dishes[0].tags.pop();
+  });
+});
+
+describe('breakfast stations', () => {
+  const meal = () => createMeal('Breakfast', breakfast, catalog);
+
+  it('adds the omelette station first, with the standard fillings ticked', () => {
+    const m = addBreakfastStation(meal(), 'omelette', catalog);
+    expect(m.lines[0]).toMatchObject({ kind: 'omelette', eggs: '', items: ['ham', 'shredded cheese'] });
+    expect(m.lines).toHaveLength(3);
+  });
+
+  it('adds burritos with every catalog kind and no counts, right after the omelette station', () => {
+    const m = addBreakfastStation(addBreakfastStation(meal(), 'omelette', catalog), 'burritos', catalog);
+    expect(m.lines.map((l) => l.kind)).toEqual(['omelette', 'burritos', 'dish', 'dish']);
+    expect(m.lines[1]).toMatchObject({ kind: 'burritos', kinds: [{ code: 'EGG/CH', qty: null }, { code: 'B/E/C', qty: null }] });
+  });
+
+  it('puts burritos first when there is no omelette station, and the omelette station above them', () => {
+    const m = addBreakfastStation(addBreakfastStation(meal(), 'burritos', catalog), 'omelette', catalog);
+    expect(m.lines.map((l) => l.kind)).toEqual(['omelette', 'burritos', 'dish', 'dish']);
+  });
+
+  it('never adds a second one of the same station', () => {
+    const once = addBreakfastStation(meal(), 'burritos', catalog);
+    expect(addBreakfastStation(once, 'burritos', catalog)).toBe(once);
+  });
+
+  it('only offers stations on breakfast meals', () => {
+    expect(breakfastStationsAvailable(createMeal('Breakfast', undefined, catalog))).toEqual(['omelette', 'burritos']);
+    expect(breakfastStationsAvailable(addBreakfastStation(meal(), 'omelette', catalog))).toEqual(['burritos']);
+    expect(breakfastStationsAvailable(createMeal('Lunch', undefined, catalog))).toEqual([]);
+  });
+
+  it('gives a duplicated meal its own copy of the burrito counts', () => {
+    const m = addBreakfastStation(meal(), 'burritos', catalog);
+    const copy = duplicateMeal(m);
+    (copy.lines[0] as BurritoLine).kinds[0].qty = 5;
+    expect((m.lines[0] as BurritoLine).kinds[0].qty).toBeNull();
   });
 });
 

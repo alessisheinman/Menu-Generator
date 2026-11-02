@@ -1,6 +1,7 @@
 import { newId } from './ids';
 import type {
-  Catalog, Day, Dish, DishLine, Line, Meal, MealTemplate, MealType, MenuEvent, SaladLine, Slot, TextLine,
+  BurritoKind, BurritoLine, Catalog, Day, Dish, DishLine, Line, Meal, MealTemplate, MealType, MenuEvent, OmeletteLine,
+  SaladLine, Slot, TextLine,
 } from './types';
 
 export function createEvent(name: string, venueLabel: string, fileName: string): MenuEvent {
@@ -32,6 +33,31 @@ export function textLine(text = ''): TextLine {
 
 export function saladLine(items: string[]): SaladLine {
   return { kind: 'salad', id: newId(), size: '', items: [...items] };
+}
+
+export function omeletteLine(items: string[]): OmeletteLine {
+  return { kind: 'omelette', id: newId(), eggs: '', items: [...items] };
+}
+
+export function burritoLine(kinds: BurritoKind[]): BurritoLine {
+  return { kind: 'burritos', id: newId(), kinds: kinds.map((k) => ({ code: k.code, qty: null })) };
+}
+
+export type BreakfastStation = 'omelette' | 'burritos';
+const STATIONS: BreakfastStation[] = ['omelette', 'burritos'];
+
+/** Stations that can still be added to this meal — breakfast only, one of each. */
+export function breakfastStationsAvailable(meal: Meal): BreakfastStation[] {
+  if (meal.type !== 'Breakfast') return [];
+  return STATIONS.filter((s) => !meal.lines.some((l) => l.kind === s));
+}
+
+/** The omelette station goes at the top; burritos sit right under it (or at the top without one). */
+export function addBreakfastStation(meal: Meal, station: BreakfastStation, catalog: Catalog): Meal {
+  if (!breakfastStationsAvailable(meal).includes(station)) return meal;
+  if (station === 'omelette') return { ...meal, lines: [omeletteLine(catalog.omelette.standard), ...meal.lines] };
+  const at = meal.lines.findIndex((l) => l.kind === 'omelette') + 1;
+  return { ...meal, lines: [...meal.lines.slice(0, at), burritoLine(catalog.burritoKinds), ...meal.lines.slice(at)] };
 }
 
 export function linesFromTemplate(template: MealTemplate, catalog: Catalog): Line[] {

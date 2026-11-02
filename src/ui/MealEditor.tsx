@@ -2,12 +2,13 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useState, type ReactNode } from 'react';
 import {
-  applyTemplate, blankDishLine, dishLineFrom, emptySlotLine, removeLine, saladLine, templateSuggestions, textLine, updateLine,
+  addBreakfastStation, applyTemplate, blankDishLine, breakfastStationsAvailable, dishLineFrom, emptySlotLine, removeLine, saladLine,
+  templateSuggestions, textLine, updateLine,
 } from '../model/event';
 import { SLOTS, type Catalog, type Dish, type Line, type Meal } from '../model/types';
 import { ConfirmButton } from './common';
 import { dragId, useSortableBox, type DragBox } from './dnd';
-import { DishRow, SaladRow, TextRow } from './LineRow';
+import { BurritoRow, DishRow, OmeletteRow, SaladRow, TextRow } from './LineRow';
 
 interface Props {
   meal: Meal;
@@ -90,6 +91,8 @@ export function MealEditor({ meal, catalog, dishByName, warnings, onChange, onDu
               {line.kind === 'dish' && <DishRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
               {line.kind === 'text' && <TextRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
               {line.kind === 'salad' && <SaladRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
+              {line.kind === 'omelette' && <OmeletteRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
+              {line.kind === 'burritos' && <BurritoRow line={line} catalog={catalog} dishByName={dishByName} onChange={setLine} />}
             </SortableLine>
           ))}
           {meal.lines.length === 0 && <li className="drop-hint">No lines yet — add one below, or drag a dish here from another meal.</li>}
@@ -103,6 +106,11 @@ export function MealEditor({ meal, catalog, dishByName, warnings, onChange, onDu
           <button key={s} type="button" className="ghost" onClick={() => addLine(emptySlotLine(s))}>+ {s}</button>
         ))}
         {!hasSalad && <button type="button" className="ghost" onClick={() => onChange({ ...meal, lines: [saladLine(catalog.saladBar.standard), ...meal.lines] })}>+ Salad bar</button>}
+        {breakfastStationsAvailable(meal).map((s) => (
+          <button key={s} type="button" className="ghost" onClick={() => onChange(addBreakfastStation(meal, s, catalog))}>
+            {s === 'omelette' ? '+ Omelette station' : '+ Burritos'}
+          </button>
+        ))}
       </footer>
       {suggestions.length > 0 && (
         <div className="suggestions">

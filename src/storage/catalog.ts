@@ -1,12 +1,14 @@
 import { SEED_DISHES } from '../catalog/dishes';
-import { SEED_SALAD_BAR, SEED_TEMPLATES, SEED_VENUES } from '../catalog/templates';
-import type { Catalog, CatalogOverrides, Dish } from '../model/types';
+import { SEED_BURRITO_KINDS, SEED_OMELETTE, SEED_SALAD_BAR, SEED_TEMPLATES, SEED_VENUES } from '../catalog/templates';
+import type { BurritoKind, Catalog, CatalogOverrides, Dish } from '../model/types';
 
 export const SEED_CATALOG: Catalog = {
   dishes: SEED_DISHES,
   templates: SEED_TEMPLATES,
   venues: SEED_VENUES,
   saladBar: SEED_SALAD_BAR,
+  omelette: SEED_OMELETTE,
+  burritoKinds: SEED_BURRITO_KINDS,
 };
 
 export const emptyOverrides = (): CatalogOverrides => ({ dishes: { upserted: [], deletedIds: [] } });
@@ -23,6 +25,8 @@ export function mergeCatalog(seed: Catalog, o: CatalogOverrides): Catalog {
     templates: o.templates ?? seed.templates,
     venues: o.venues ?? seed.venues,
     saladBar: o.saladBar ?? seed.saladBar,
+    omelette: o.omelette ?? seed.omelette,
+    burritoKinds: o.burritoKinds ?? seed.burritoKinds,
   };
 }
 
@@ -45,6 +49,20 @@ export function deleteDish(o: CatalogOverrides, id: string): CatalogOverrides {
     },
   };
 }
+
+/** Burrito kinds as edited in the catalog: one "CODE = Name" per line (the name is optional). */
+export function parseBurritoKinds(text: string): BurritoKind[] {
+  const out: BurritoKind[] = [];
+  for (const row of text.split('\n')) {
+    const [rawCode, ...rest] = row.split('=');
+    const code = rawCode.trim().toUpperCase();
+    if (!code || out.some((k) => k.code === code)) continue;
+    out.push({ code, name: rest.join('=').trim() || code });
+  }
+  return out;
+}
+
+export const burritoKindsText = (kinds: BurritoKind[]) => kinds.map((k) => `${k.code} = ${k.name}`).join('\n');
 
 /** Sort for pickers: by category order is handled by callers; here just alphabetical. */
 export const byName = (a: Dish, b: Dish) => a.name.localeCompare(b.name);

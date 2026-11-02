@@ -11,6 +11,8 @@ const catalog: Catalog = {
   templates: [{ id: 'lunch-italian', name: 'Italian', mealType: 'Lunch', includesSaladBar: true, lines: [] }],
   venues: [{ id: 'rcmh', name: 'Radio City Music Hall', printLabel: 'RCMH' }],
   saladBar: { standard: ['Cherry Tomatoes', 'Corn'], addOns: [] },
+  omelette: { standard: [], addOns: [] },
+  burritoKinds: [],
 };
 
 const proposal = {

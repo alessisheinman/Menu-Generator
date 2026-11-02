@@ -30,6 +30,21 @@ describe('formatLine', () => {
   it('prints the salad bar without size', () => {
     expect(formatLine({ kind: 'salad', id: 's', size: '', items: ['Cucumbers'] })).toBe('Salad with: Cucumbers');
   });
+  it('prints the omelette station with its egg count', () => {
+    expect(formatLine({ kind: 'omelette', id: 'o', eggs: '50', items: ['ham', 'shredded cheese', 'parsley'] }))
+      .toBe('50 EGGS OMELETTE STATION: ham, shredded cheese, parsley');
+  });
+  it('prints the omelette station without a count or fillings', () => {
+    expect(formatLine({ kind: 'omelette', id: 'o', eggs: ' ', items: ['ham'] })).toBe('OMELETTE STATION: ham');
+    expect(formatLine({ kind: 'omelette', id: 'o', eggs: '', items: [] })).toBe('OMELETTE STATION');
+  });
+  it('prints assorted burritos with a total and only the kinds that have a count', () => {
+    const kinds = [{ code: 'EGG/CH', qty: 10 }, { code: 'B/E/C', qty: 10 }, { code: 'S/E/C', qty: null }, { code: 'X', qty: 0 }];
+    expect(formatLine({ kind: 'burritos', id: 'b', kinds })).toBe('20 Assorted Burritos: 10 EGG/CH, 10 B/E/C');
+  });
+  it('prints assorted burritos with no counts as a plain line', () => {
+    expect(formatLine({ kind: 'burritos', id: 'b', kinds: [{ code: 'EGG/CH', qty: null }] })).toBe('Assorted Burritos');
+  });
 });
 
 describe('printableLines', () => {

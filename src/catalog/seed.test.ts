@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CATEGORIES } from '../model/types';
 import { SEED_DISHES, parseSeedEntry } from './dishes';
-import { SEED_TEMPLATES, SEED_VENUES } from './templates';
+import { SEED_BURRITO_KINDS, SEED_OMELETTE, SEED_TEMPLATES, SEED_VENUES } from './templates';
 
 describe('seed catalog', () => {
   it('has unique dish ids', () => {
@@ -20,6 +20,12 @@ describe('seed catalog', () => {
       t.lines.flatMap((l) => [l.dishId, ...(l.alternatives ?? [])]).filter((id): id is string => id !== null && !ids.has(id)),
     );
     expect(missing).toEqual([]);
+  });
+
+  it('starts the breakfast stations with the fillings and burrito kinds from past menus', () => {
+    expect(SEED_OMELETTE.standard).toEqual(['ham', 'shredded cheese', 'onions', 'peppers', 'mushrooms', 'parsley']);
+    expect(SEED_OMELETTE.addOns).toEqual(['grilled chicken']);
+    expect(SEED_BURRITO_KINDS.map((k) => k.code)).toEqual(['EGG/CH', 'B/E/C', 'S/E/C']);
   });
 
   it('has unique template and venue ids', () => {
