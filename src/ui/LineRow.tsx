@@ -96,6 +96,18 @@ export function TextRow({ line, onChange }: RowProps<TextLine>) {
 
 const SIZES: SaladSize[] = ['Small', 'Medium', 'Large'];
 
+function SizeButtons({ size, label, onChange }: { size: SaladSize; label: string; onChange: (s: SaladSize) => void }) {
+  return (
+    <span className="seg" role="group" aria-label={label}>
+      {SIZES.map((s) => (
+        <button key={s} type="button" className={size === s ? 'on' : ''} onClick={() => onChange(size === s ? '' : s)}>
+          {s}
+        </button>
+      ))}
+    </span>
+  );
+}
+
 /** Calls `add` with the typed text when Enter is pressed, then clears the box. */
 function AddBox({ label, placeholder, add }: { label: string; placeholder: string; add: (v: string) => void }) {
   return (
@@ -140,13 +152,7 @@ export function SaladRow({ line, catalog, onChange }: RowProps<SaladLine>) {
     <div className="salad">
       <div className="salad-head">
         <strong>Salad bar</strong>
-        <span className="seg" role="group" aria-label="Salad size">
-          {SIZES.map((s) => (
-            <button key={s} type="button" className={line.size === s ? 'on' : ''} onClick={() => onChange({ ...line, size: line.size === s ? '' : s })}>
-              {s}
-            </button>
-          ))}
-        </span>
+        <SizeButtons size={line.size} label="Salad size" onChange={(size) => onChange({ ...line, size })} />
       </div>
       <ItemChips
         items={line.items}
@@ -163,6 +169,7 @@ export function OmeletteRow({ line, catalog, onChange }: RowProps<OmeletteLine>)
     <div className="salad station">
       <div className="salad-head">
         <strong>Omelette station</strong>
+        <SizeButtons size={line.size ?? ''} label="Omelette station size" onChange={(size) => onChange({ ...line, size })} />
         <label className="station-count">
           <input value={line.eggs} placeholder="#" inputMode="numeric" aria-label="Number of eggs" onChange={(e) => onChange({ ...line, eggs: e.target.value })} />
           eggs

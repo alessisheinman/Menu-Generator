@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addBreakfastStation, applyTemplate, breakfastStationsAvailable, createDay, createEvent, createMeal, duplicateDay,
+  addBreakfastStation, applyTemplate, breakfastStationsAvailable, carriedHeader, createDay, createEvent, createMeal, duplicateDay,
   duplicateMeal, insertAfter, mapMeal, move, setLineDish, templateSuggestions, validateEvent,
 } from './event';
-import type { BurritoLine, Catalog, DishLine, MealTemplate } from './types';
+import type { BurritoLine, Catalog, DishLine, MealTemplate, MealType, MenuEvent } from './types';
 
 const catalog: Catalog = {
   dishes: [
@@ -28,6 +28,44 @@ const breakfast: MealTemplate = {
     { dishId: 'deleted-dish' },
   ],
 };
+
+describe('carriedHeader (banner text for a new meal)', () => {
+  const banner = (type: MealType, time: string, headcount: number | null, headerNote: string) =>
+    ({ ...createMeal(type, undefined, catalog), time, headcount, headerNote });
+  const eventWith = (...days: ReturnType<typeof banner>[][]): MenuEvent => ({
+    ...createEvent('E', 'RCMH', 'e.docx'),
+    days: days.map((meals) => ({ ...createDay('DAY'), meals })),
+  });
+
+  it('starts blank when there is nothing to copy', () => {
+    const ev = eventWith([]);
+    expect(carriedHeader(ev, ev.days[0].id, 'Lunch')).toEqual({ time: '', headcount: null, headerNote: '' });
+  });
+  it('copies people and note from the meal before it on the same day, but not its time', () => {
+    const ev = eventWith([banner('Breakfast', '5AM', 40, 'CHINA')]);
+    expect(carriedHeader(ev, ev.days[0].id, 'Lunch')).toEqual({ time: '', headcount: 40, headerNote: 'CHINA' });
+  });
+  it('copies everything, time included, from the same meal on an earlier day', () => {
+    const ev = eventWith([banner('Lunch', '12PM', 60, 'BUFFET'), banner('Dinner', '6PM', 80, 'CHINA')], []);
+    expect(carriedHeader(ev, ev.days[1].id, 'Lunch')).toEqual({ time: '12PM', headcount: 60, headerNote: 'BUFFET' });
+  });
+  it('prefers the closest earlier meal of that type', () => {
+    const ev = eventWith([banner('Lunch', '12PM', 60, 'OLD')], [banner('Lunch', '1PM', 70, 'NEW')], []);
+    expect(carriedHeader(ev, ev.days[2].id, 'Lunch')).toEqual({ time: '1PM', headcount: 70, headerNote: 'NEW' });
+  });
+  it('fills gaps in the same-type meal from the nearest other meal', () => {
+    const ev = eventWith([banner('Lunch', '12PM', null, ''), banner('Dinner', '6PM', 80, 'CHINA')], []);
+    expect(carriedHeader(ev, ev.days[1].id, 'Lunch')).toEqual({ time: '12PM', headcount: 80, headerNote: 'CHINA' });
+  });
+  it('looks at later days only when nothing comes earlier', () => {
+    const ev = eventWith([], [banner('Lunch', '12PM', 60, 'BUFFET')]);
+    expect(carriedHeader(ev, ev.days[0].id, 'Lunch')).toEqual({ time: '12PM', headcount: 60, headerNote: 'BUFFET' });
+  });
+  it('keeps a headcount of zero rather than treating it as blank', () => {
+    const ev = eventWith([banner('Lunch', '', 0, '')]);
+    expect(carriedHeader(ev, ev.days[0].id, 'Dinner').headcount).toBe(0);
+  });
+});
 
 describe('createMeal / applyTemplate', () => {
   it('adds enabled template dishes, skipping disabled and missing ones', () => {
@@ -65,7 +103,7 @@ describe('breakfast stations', () => {
 
   it('adds the omelette station first, with the standard fillings ticked', () => {
     const m = addBreakfastStation(meal(), 'omelette', catalog);
-    expect(m.lines[0]).toMatchObject({ kind: 'omelette', eggs: '', items: ['ham', 'shredded cheese'] });
+    expect(m.lines[0]).toMatchObject({ kind: 'omelette', size: '', eggs: '', items: ['ham', 'shredded cheese'] });
     expect(m.lines).toHaveLength(3);
   });
 

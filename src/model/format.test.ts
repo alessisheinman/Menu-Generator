@@ -31,12 +31,20 @@ describe('formatLine', () => {
     expect(formatLine({ kind: 'salad', id: 's', size: '', items: ['Cucumbers'] })).toBe('Salad with: Cucumbers');
   });
   it('prints the omelette station with its egg count', () => {
-    expect(formatLine({ kind: 'omelette', id: 'o', eggs: '50', items: ['ham', 'shredded cheese', 'parsley'] }))
+    expect(formatLine({ kind: 'omelette', id: 'o', size: '', eggs: '50', items: ['ham', 'shredded cheese', 'parsley'] }))
       .toBe('50 EGGS OMELETTE STATION: ham, shredded cheese, parsley');
   });
   it('prints the omelette station without a count or fillings', () => {
-    expect(formatLine({ kind: 'omelette', id: 'o', eggs: ' ', items: ['ham'] })).toBe('OMELETTE STATION: ham');
-    expect(formatLine({ kind: 'omelette', id: 'o', eggs: '', items: [] })).toBe('OMELETTE STATION');
+    expect(formatLine({ kind: 'omelette', id: 'o', size: '', eggs: ' ', items: ['ham'] })).toBe('OMELETTE STATION: ham');
+    expect(formatLine({ kind: 'omelette', id: 'o', size: '', eggs: '', items: [] })).toBe('OMELETTE STATION');
+  });
+  it('prints the omelette station size in capitals, with or without a count', () => {
+    expect(formatLine({ kind: 'omelette', id: 'o', size: 'Large', eggs: '50', items: ['ham'] })).toBe('50 EGGS LARGE OMELETTE STATION: ham');
+    expect(formatLine({ kind: 'omelette', id: 'o', size: 'Small', eggs: '', items: [] })).toBe('SMALL OMELETTE STATION');
+  });
+  it('prints omelette stations saved before sizes existed', () => {
+    const saved = { kind: 'omelette', id: 'o', eggs: '50', items: ['ham'] } as unknown as Parameters<typeof formatLine>[0];
+    expect(formatLine(saved)).toBe('50 EGGS OMELETTE STATION: ham');
   });
   it('prints assorted burritos with a total and only the kinds that have a count', () => {
     const kinds = [{ code: 'EGG/CH', qty: 10 }, { code: 'B/E/C', qty: 10 }, { code: 'S/E/C', qty: null }, { code: 'X', qty: 0 }];

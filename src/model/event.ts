@@ -36,7 +36,7 @@ export function saladLine(items: string[]): SaladLine {
 }
 
 export function omeletteLine(items: string[]): OmeletteLine {
-  return { kind: 'omelette', id: newId(), eggs: '', items: [...items] };
+  return { kind: 'omelette', id: newId(), size: '', eggs: '', items: [...items] };
 }
 
 export function burritoLine(kinds: BurritoKind[]): BurritoLine {
@@ -82,6 +82,26 @@ export function createMeal(type: MealType, template: MealTemplate | undefined, c
     id: newId(), type, time: '', headcount: null, headerNote: '',
     templateId: template?.id,
     lines: template ? linesFromTemplate(template, catalog) : [],
+  };
+}
+
+/**
+ * The banner text a new meal starts with, so it doesn't have to be retyped. People and note come from the
+ * closest same-type meal, else the closest meal of any type; time comes only from a same-type meal, because
+ * a breakfast time is never right for a lunch. "Closest" reads backwards from the end of the meal's day,
+ * then forwards through later days.
+ */
+export function carriedHeader(event: MenuEvent, dayId: string, type: MealType): Pick<Meal, 'time' | 'headcount' | 'headerNote'> {
+  const at = event.days.findIndex((d) => d.id === dayId);
+  const earlier = event.days.slice(0, at + 1).flatMap((d) => d.meals).reverse();
+  const later = event.days.slice(at + 1).flatMap((d) => d.meals);
+  const nearest = [...earlier, ...later];
+  const sameType = nearest.filter((m) => m.type === type);
+  const closest = [...sameType, ...nearest];
+  return {
+    time: sameType.find((m) => m.time.trim())?.time ?? '',
+    headcount: closest.find((m) => m.headcount != null)?.headcount ?? null,
+    headerNote: closest.find((m) => m.headerNote.trim())?.headerNote ?? '',
   };
 }
 

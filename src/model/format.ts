@@ -17,7 +17,7 @@ export function formatLine(line: Line): string {
       return `Salad with${line.size ? ` ${line.size}` : ''}: ${line.items.join(', ')}`;
     case 'omelette': {
       const eggs = line.eggs.trim();
-      const head = joinParts([eggs ? `${eggs} EGGS` : '', 'OMELETTE STATION']);
+      const head = joinParts([eggs ? `${eggs} EGGS` : '', (line.size ?? '').toUpperCase(), 'OMELETTE STATION']); // older saved lines have no size
       return line.items.length ? `${head}: ${line.items.join(', ')}` : head;
     }
     case 'burritos': {

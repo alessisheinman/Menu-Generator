@@ -127,6 +127,14 @@ describe('proposalToKitchen', () => {
     const kitchenLunch = proposalToKitchen(withStations('Lunch'), stationCatalog).days[0].meals[0];
     expect(kitchenLunch.lines.map((l) => l.kind)).toEqual(['dish', 'dish', 'dish', 'dish']); // stations are breakfast only
   });
+  it('carries pescatarian and dairy-free tags across', () => {
+    const tagged = { ...proposal, days: [{ ...proposal.days[0], meals: [{ id: 'm', type: 'Lunch', title: 'LUNCH', lines: [
+      { kind: 'dish', id: 'a', dishName: 'Seared Cod', tags: ['Pesc', 'GF'], description: '' },
+      { kind: 'dish', id: 'b', dishName: 'Bacon', tags: ['GF', 'DF'], description: '' },
+    ] }] }] } as unknown as Proposal;
+    const lines = proposalToKitchen(tagged, catalog).days[0].meals[0].lines as DishLine[];
+    expect(lines.map((l) => l.tags)).toEqual([['Pesc', 'GF'], ['GF', 'DF']]);
+  });
   it('puts a non-standard page heading on the red header line', () => {
     expect(overnight).toMatchObject({ type: 'Custom', headerNote: 'OVERNIGHT MEAL', lines: [] });
   });

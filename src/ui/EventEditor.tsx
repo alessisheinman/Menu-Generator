@@ -4,7 +4,7 @@ import {
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  createDay, createMeal, duplicateDay, duplicateMeal, insertAfter, mapDay, mapMeal, touch, validateEvent,
+  carriedHeader, createDay, createMeal, duplicateDay, duplicateMeal, insertAfter, mapDay, mapMeal, touch, validateEvent,
 } from '../model/event';
 import { formatHeader, formatLine } from '../model/format';
 import { findLine, findMeal, moveDay, moveLine, moveMeal } from '../model/reorder';
@@ -43,7 +43,7 @@ export function EventEditor({ event, catalog, onChange, onBack }: Props) {
 
   const addMeal = (dayId: string, type: MealType) => {
     const template = catalog.templates.find((t) => t.mealType === type);
-    const meal = createMeal(type, template, catalog);
+    const meal = { ...createMeal(type, template, catalog), ...carriedHeader(event, dayId, type) };
     update(mapDay(event, dayId, (d) => ({ ...d, meals: [...d.meals, meal] })));
     setActiveMealId(meal.id);
   };

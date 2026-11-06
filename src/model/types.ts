@@ -1,5 +1,5 @@
-export type Tag = 'GF' | 'Vegan' | 'Vegetarian';
-export const TAGS: Tag[] = ['Vegan', 'Vegetarian', 'GF'];
+export type Tag = 'GF' | 'Vegan' | 'Vegetarian' | 'Pesc' | 'DF';
+export const TAGS: Tag[] = ['Vegan', 'Vegetarian', 'Pesc', 'GF', 'DF'];
 
 export type Category =
   | 'Breakfast' | 'Soup' | 'Salad' | 'Sandwich' | 'Pasta' | 'Rice/Grains'
@@ -64,6 +64,7 @@ export interface Catalog {
   burritoKinds: BurritoKind[];
 }
 
+/** Size of a salad bar or omelette station. */
 export type SaladSize = '' | 'Small' | 'Medium' | 'Large';
 
 /** Dish lines snapshot name + tags so later catalog edits never change a saved menu. */
@@ -82,7 +83,7 @@ export interface DishLine {
 export interface TextLine { kind: 'text'; id: string; text: string; }
 export interface SaladLine { kind: 'salad'; id: string; size: SaladSize; items: string[]; }
 /** Breakfast only. */
-export interface OmeletteLine { kind: 'omelette'; id: string; eggs: string; items: string[]; }
+export interface OmeletteLine { kind: 'omelette'; id: string; size: SaladSize; eggs: string; items: string[]; }
 /** Breakfast only; the printed total is the sum of the kinds' counts. */
 export interface BurritoLine { kind: 'burritos'; id: string; kinds: { code: string; qty: number | null }[]; }
 export type Line = DishLine | TextLine | SaladLine | OmeletteLine | BurritoLine;
